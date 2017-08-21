@@ -1,0 +1,7 @@
+PREFIX up: <http://purl.uniprot.org/core/>
+SELECT DISTINCT ?pfam
+FROM <http://togogenome.org/graph/uniprot>
+{
+ ?pfam up:signatureSequenceMatch ?pfam_info ;
+   up:database <http://purl.uniprot.org/database/Pfam>
+}

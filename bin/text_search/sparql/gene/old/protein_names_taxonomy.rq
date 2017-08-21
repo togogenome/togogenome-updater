@@ -1,0 +1,27 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT ?protein
+  GROUP_CONCAT(DISTINCT ?parent_taxonomy_name; separator = ",") AS ?parent_taxonomy_name
+WHERE
+{
+  GRAPH <http://togogenome.org/graph/tgup> {
+#   VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
+    ?protein <http://purl.org/dc/terms/publisher> ?link .
+    ?idx_up rdfs:seeAlso ?protein  .
+    ?idx_up rdf:type <http://identifiers.org/uniprot> .
+    ?idx_up rdfs:seeAlso ?idx_tax  .
+  } 
+  GRAPH  <http://togogenome.org/graph/taxonomy> { 
+    ?idx_tax rdfs:seeAlso ?up_tax .
+  }
+  GRAPH  <http://togogenome.org/graph/uniprot> {
+    ?up_tax rdf:type up:Taxon .
+  }
+  GRAPH  <http://togogenome.org/graph/text_search/up_tax_subclass_reasoner> {
+    ?up_tax rdfs:subClassOf ?parent_taxonomy .
+  }
+  GRAPH  <http://togogenome.org/graph/uniprot> {
+    ?parent_taxonomy up:scientificName ?parent_taxonomy_name .
+  }
+} GROUP BY ?protein

@@ -1,0 +1,33 @@
+#get togo_gene and uniprot, group by togo_gene
+SPARQL
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+SELECT
+ (REPLACE(STR(?togo_gene),"http://togogenome.org/gene/", "" AS ?togo_gene_no)
+ GROUP_CONCAT(DISTINCT ?uniprot_id; separator = ",") AS ?uniprot_ids
+WHERE {
+  GRAPH <http://togogenome.org/graph/tgtax>
+  {
+    ?taxonomy_id rdfs:subClassOf <http://identifiers.org/taxonomy/1>
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy>
+  {
+    ?taxonomy_id rdfs:label ?taxonomy_name .
+  }
+  GRAPH <http://togogenome.org/graph/tgup> {
+  ?togo_gene rdfs:seeAlso ?taxonomy_id .
+  ?togo_gene skos:exactMatch ?refseq_gene .
+  ?togo_gene rdfs:seeAlso ?id_uniprot .
+  ?id_uniprot a <http://identifiers.org/uniprot> . 
+  ?id_uniprot rdfs:seeAlso ?uniprot.
+  }
+  GRAPH <http://togogenome.org/graph/uniprot> {
+  ?uniprot a up:Protein .
+  BIND (REPLACE(STR(?uniprot), "http://purl.uniprot.org/uniprot/", "") AS ?uniprot_id)
+ }
+} GROUP BY ?togo_gene
+;
+#usage: 71.sh isql < get_uniprot_ids.rq > uniprot_ids.txt
+#cat uniprot_ids.txt | awk '{print $1, $2}' > uniprot_ids_trim.txt
+#grep "," uniprot_ids_trim.txt > uniprot_ids_multi.txt
+#

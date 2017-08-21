@@ -1,0 +1,35 @@
+SPARQL
+DEFINE sql:select-option "order"
+PREFIX mccv: <http://purl.jp/bio/01/mccv#>
+
+SELECT ?tax_id ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?strain_number ; separator = "|||") AS ?strain_numbers ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?strain_name; separator = "|||") AS ?strain_names ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?isolation; separator = "|||,") AS ?isolations ("^@" AS ?delimit4)
+  GROUP_CONCAT(DISTINCT ?meo_label; separator = "|||") AS ?meo_labels ("^@" AS ?delimit5)
+  GROUP_CONCAT(DISTINCT ?application; separator = "|||") AS ?applications ("^@" AS ?delimit6)
+  GROUP_CONCAT(DISTINCT ?other_link; separator = "|||") AS ?other_links
+WHERE
+{
+  {
+    SELECT DISTINCT ?strain_id ?tax_id
+    {
+      VALUES ?related_type  { mccv:MCCV_000056 mccv:MCCV_000022 mccv:MCCV_000057 }
+      GRAPH  <http://togogenome.org/graph/brc> {
+        ?strain_id ?related_type  ?tax_id .
+      }
+    }
+  }
+  OPTIONAL { ?strain_id mccv:MCCV_000010 ?strain_number . }
+  OPTIONAL { ?strain_id mccv:MCCV_000012 ?strain_name . }
+  OPTIONAL { ?strain_id mccv:MCCV_000030 ?isolation . }
+  OPTIONAL
+  {
+    ?strain_id mccv:MCCV_000059|mccv:MCCV_000060 ?meo_id .
+    ?meo_id rdfs:label ?meo_label .
+  }
+  OPTIONAL { ?strain_id mccv:MCCV_000033 ?application . }
+  OPTIONAL { ?strain_id mccv:MCCV_000024/mccv:MCCV_000026 ?other_link . }
+  FILTER (STRSTARTS(STR(?tax_id), "http://identifiers.org/taxonomy/")) 
+} GROUP BY ?tax_id
+;

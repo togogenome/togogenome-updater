@@ -1,0 +1,13 @@
+CONSTRUCT
+{
+  ?tax rdfs:subClassOf ?parent
+}
+WHERE {
+  GRAPH <http://togogenome.org/graph/tgtax> {
+    ?tg_tax rdfs:subClassOf <http://identifiers.org/taxonomy/131567>  .
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?tg_tax rdfs:subClassOf* ?tax .
+    ?tax rdfs:subClassOf ?parent .
+  }
+}

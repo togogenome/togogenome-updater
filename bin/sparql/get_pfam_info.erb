@@ -1,0 +1,11 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT ?pfam ?tax_id ?pfam_info
+FROM <http://togogenome.org/graph/uniprot>
+{
+  VALUES ?pfam { <http://purl.uniprot.org/pfam/<%= pfam_id %>> }
+  ?pfam up:signatureSequenceMatch ?pfam_info .
+  ?protein rdfs:seeAlso ?pfam .
+  ?protein up:organism ?tax_id .
+}

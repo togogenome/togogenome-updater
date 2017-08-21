@@ -1,0 +1,24 @@
+DEFINE sql:select-option "order"
+
+PREFIX mccv: <http://purl.jp/bio/01/mccv#>
+PREFIX meo: <http://purl.jp/bio/11/meo/>
+PREFIX taxo: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+SELECT
+  (REPLACE(STR(?gold) ,"http://www.genomesonline.org/cgi-bin/GOLD/GOLDCards.cgi\\?goldstamp=" ,"" ) AS ?source_id)
+  ?organism_name ("" AS ?isolation)
+  ((sql:GROUP_DIGEST(?meo_label, ', ', 1000, 1)) AS ?meo_labels)
+FROM <http://togogenome.org/graph/gold>
+FROM <http://togogenome.org/graph/meo>
+FROM <http://togogenome.org/graph/taxonomy>
+{
+  VALUES ?meo_mapping { meo:MEO_0000437 meo:MEO_0000440 }
+  ?meo_id rdfs:subClassOf* <<%= meo_id %>> .
+  ?gold ?meo_mapping ?meo_id .
+  ?meo_id rdfs:label ?meo_label .
+  OPTIONAL
+  {
+    ?gold mccv:MCCV_000020 ?tax_id .
+    ?tax_id taxo:scientificName ?organism_name
+  }
+} GROUP BY ?gold ?tax_id ?organism_name

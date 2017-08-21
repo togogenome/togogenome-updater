@@ -1,0 +1,19 @@
+PREFIX up: <http://purl.uniprot.org/core/>
+
+CONSTRUCT
+{
+  ?type rdfs:subClassOf ?parent_type
+}
+FROM <http://togogenome.org/graph/uniprot>
+WHERE
+{
+  {
+    SELECT DISTINCT ?type
+    {
+      ?protein up:annotation ?annotation .
+      ?annotation rdf:type ?type .
+    }
+  }
+  ?type rdfs:subClassOf* ?parent_type .
+}
+#usage: ../../../sparql_construct.rb http://ep.dbcls.jp/sparql-import uniprot_anno_type_reasoner.rq > uniprot_anno_type_reasoner.ttl

@@ -1,0 +1,15 @@
+{
+  "@context": {
+    "meo_id":       "http://togogenome.org/environment/text/meo_id",
+    "source_ids":       "http://togogenome.org/environment/text/source_ids",
+    "organism_names":       "http://togogenome.org/environment/text/organism_names",
+    "meo_labels":       "http://togogenome.org/environment/text/meo_labels",
+    "isolations":       "http://togogenome.org/environment/text/isolations"
+  },
+  "@id": "http://togogenome.org/environment/MEO_0000618",
+  "meo_id": "MEO_0000618",
+  "source_ids": "Gc00122,Gi05082,JCM 4769 NBRC 13355",
+  "organism_names": "Lactobacillus plantarum WCFS1,Streptomyces horton (Erikson) Pridham et al.",
+  "meo_labels": "Saliva,Parotid gland pus",
+  "isolations": "\"Pus, a case of parotid abscess\" Pus, parotid abscess"
+}

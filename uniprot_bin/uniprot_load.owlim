@@ -1,0 +1,13 @@
+connect http://localhost:8080/openrdf-sesame .
+open uniprot .
+load uniprot_unzip/core.owl .
+load uniprot_unzip/databases.rdf .
+load uniprot_unzip/locations.rdf .
+load uniprot_unzip/tissues.rdf .
+load uniprot_unzip/keywords.rdf .
+load uniprot_unzip/pathways.rdf .
+load uniprot_unzip/journals.rdf .
+load uniprot_unzip/enzyme.rdf .
+load uniprot_unzip/go.rdf .
+load uniprot_unzip/taxonomy.rdf .
+load uniprot_unzip/citations.rdf .

@@ -1,0 +1,10 @@
+CONSTRUCT
+{
+  ?mpo_id rdfs:subClassOf ?parent_mpo_id
+}
+FROM <http://togogenome.org/graph/mpo>
+WHERE
+{
+  ?mpo_id a owl:Class .
+  ?mpo_id rdfs:subClassOf* ?parent_mpo_id
+}

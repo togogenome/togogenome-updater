@@ -1,0 +1,24 @@
+PREFIX mpo: <http://purl.jp/bio/01/mpo#>
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+CONSTRUCT
+{
+  ?tax rdfs:subClassOf ?parent
+}
+WHERE {
+  {
+    SELECT DISTINCT ?tax
+    {
+      GRAPH <http://togogenome.org/graph/gold> {
+        VALUES ?tax_mpo {mpo:MPO_10002 mpo:MPO_10001 mpo:MPO_10003 mpo:MPO_10005 mpo:MPO_10009 mpo:MPO_10010 mpo:MPO_10011 mpo:MPO_10013 mpo:MPO_10014 mpo:MPO_10015 mpo:MPO_10016 mpo:MPO_10006 mpo:MPO_10007}
+        ?tax ?tax_mpo ?mpo_id .
+      }
+      GRAPH <http://togogenome.org/graph/taxonomy> {
+        ?tax a tax:Taxon .
+      }
+    }
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?tax rdfs:subClassOf* ?parent .
+  }
+}

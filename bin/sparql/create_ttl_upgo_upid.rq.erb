@@ -1,0 +1,34 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+
+CONSTRUCT
+{
+ <<%= upgo_uri %>> up:classifiedWith ?uniprot_uri 
+}
+FROM <http://togogenome.org/graph/uniprot>
+FROM <http://togogenome.org/graph/tgup>
+WHERE
+{
+ {
+  SELECT DISTINCT ?uniprot_uri
+  WHERE
+  {
+   {
+    SELECT DISTINCT ?uniprot_go
+    {
+     {
+      ?uniprot_go a <http://www.w3.org/2002/07/owl#Class> .
+      FILTER (?uniprot_go = <<%= upgo_uri %>>)
+     }
+     UNION
+     {
+      ?uniprot_go rdfs:subClassOf <<%= upgo_uri %>> .
+     }
+    }
+   }
+   ?uniprot_bp up:classifiedWith ?uniprot_go .
+   ?uniprot_bp up:recommendedName/up:fullName ?recommended_name . 
+   ?uniprot_uri rdfs:seeAlso ?uniprot_bp .
+  } OFFSET <%= offset %> LIMIT <%= limit %>
+ }
+}

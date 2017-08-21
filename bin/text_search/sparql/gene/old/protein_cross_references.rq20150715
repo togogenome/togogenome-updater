@@ -1,0 +1,18 @@
+SPARQL
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT ?protein ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?ref; separator = "|||") AS ?xref_uris
+WHERE {
+  GRAPH <http://togogenome.org/graph/tgup> {
+    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
+    ?protein <http://purl.org/dc/terms/publisher> ?o
+  }
+  GRAPH <http://togogenome.org/graph/uniprot> {
+    ?protein rdfs:seeAlso ?ref .
+    ?ref up:database ?database .
+    ?database up:category ?category ;
+      up:abbreviation ?abbr .
+  }
+} GROUP BY ?protein
+;

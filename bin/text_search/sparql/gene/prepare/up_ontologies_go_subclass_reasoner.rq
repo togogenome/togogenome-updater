@@ -1,0 +1,11 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX obo: <http://purl.obolibrary.org/obo/>
+
+SELECT DISTINCT ?obo_go_uri ("^@" AS ?delimit1) ?root_go_uri
+FROM <http://togogenome.org/graph/go>
+WHERE {
+  VALUES ?root_go_uri { obo:GO_0008150 obo:GO_0005575 obo:GO_0003674 }
+  ?root_go_uri  a owl:Class .
+  ?obo_go_uri rdfs:subClassOf* ?root_go_uri .
+  #FILTER (str(?root_go_uri) IN (obo:GO_0008150, obo:GO_0005575, obo:GO_0003674))
+}

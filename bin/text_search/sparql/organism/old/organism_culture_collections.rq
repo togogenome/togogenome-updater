@@ -1,0 +1,36 @@
+# This query's search scope is taxonomy which is used in RefSseq data
+DEFINE sql:select-option "order"
+PREFIX mccv: <http://purl.jp/bio/01/mccv#>
+
+SELECT ?tax_id
+  GROUP_CONCAT(DISTINCT ?strain_number ; separator = ",") AS ?strain_numbers 
+  GROUP_CONCAT(DISTINCT ?strain_name; separator = ",") AS ?strain_names
+  GROUP_CONCAT(DISTINCT ?isolation; separator = ",") AS ?culture_isolations
+  GROUP_CONCAT(DISTINCT ?meo_label; separator = ",") AS ?culture_environments
+  GROUP_CONCAT(DISTINCT ?application; separator = ",") AS ?culture_applications
+  GROUP_CONCAT(DISTINCT ?other_link; separator = ",") AS ?other_cultures
+WHERE
+{
+  {
+    SELECT DISTINCT ?strain_id ?tax_id
+    {
+      VALUES ?related_type  { mccv:MCCV_000056 mccv:MCCV_000022 mccv:MCCV_000057 }
+      GRAPH <http://togogenome.org/graph/tgtax> {
+        ?child_tax rdfs:subClassOf ?tax_id .
+      }
+      GRAPH  <http://togogenome.org/graph/brc> {
+        ?strain_id ?related_type  ?tax_id .
+      }
+    }
+  }
+  OPTIONAL { ?strain_id mccv:MCCV_000010 ?strain_number . }
+  OPTIONAL { ?strain_id mccv:MCCV_000012 ?strain_name . }
+  OPTIONAL { ?strain_id mccv:MCCV_000030 ?isolation . }
+  OPTIONAL
+  {
+    ?strain_id mccv:MCCV_000059|mccv:MCCV_000060 ?meo_id .
+    ?meo_id rdfs:label ?meo_label .
+  }
+  OPTIONAL { ?strain_id mccv:MCCV_000033 ?application . }
+  OPTIONAL { ?strain_id mccv:MCCV_000024/mccv:MCCV_000026 ?other_link . }
+} GROUP BY ?tax_id

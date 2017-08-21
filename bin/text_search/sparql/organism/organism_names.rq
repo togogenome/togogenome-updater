@@ -1,0 +1,21 @@
+SPARQL
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+SELECT ?tax_id ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?scientific_name; separator = "|||") AS ?name ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?synonym; separator = "|||") AS ?synonyms
+WHERE
+{
+  VALUES ?name_type
+  {
+    tax:scientificName tax:synonym tax:preferredSynonym tax:acronym tax:preferredAcronym tax:anamorph tax:teleomorph
+    tax:misnomer tax:commonName tax:preferredCommonName tax:inPart tax:includes tax:equivalentName
+    tax:genbankSynonym tax:genbankCommonName tax:authority tax:misspelling
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?tax_id  a <http://ddbj.nig.ac.jp/ontologies/taxonomy/Taxon> .
+    ?tax_id  ?name_type ?synonym .
+    ?tax_id  tax:scientificName ?scientific_name .
+  }
+} GROUP BY ?tax_id
+;

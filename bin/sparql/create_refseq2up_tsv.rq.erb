@@ -1,0 +1,36 @@
+DEFINE sql:select-option "order"
+PREFIX insdc:   <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
+PREFIX obo:     <http://purl.obolibrary.org/obo/>
+
+SELECT
+ ?taxonomy_id
+ ?bioproject_id
+ (REPLACE(STR(?feature),"http://identifiers.org/refseq/","") AS ?feature)
+ ?feature_label
+ (REPLACE(STR(?feature_types),"http://ddbj.nig.ac.jp/ontologies/nucleotide/","") AS ?feature_type)
+ (REPLACE(STR(?gene),"http://identifiers.org/refseq/","") AS ?gene)
+ ?gene_label
+ ?protein_id
+FROM <http://togogenome.org/graph/refseq>
+WHERE
+{
+ VALUES ?feature_types { insdc:Coding_Sequence insdc:Non_Coding_RNA insdc:Transfer_RNA insdc:Ribosomal_RNA }
+
+ <http://identifiers.org/refseq/<%= rsid %>> insdc:sequence ?seq ;
+   insdc:dblink ?bioproject .
+ ?bioproject a insdc:BioProject ;
+   rdfs:label ?bioproject_id .
+ ?seq obo:RO_0002162/rdfs:label ?taxonomy_id .
+ ?gene obo:so_part_of ?seq ;
+   rdfs:label ?gene_label ;
+   rdf:type insdc:Gene .
+ ?feature obo:so_part_of ?gene ;
+   rdfs:label ?feature_label ;
+   rdf:type ?feature_types .
+ OPTIONAL
+ {
+   ?feature rdfs:seeAlso ?protein .
+   ?protein a insdc:Protein ;
+     rdfs:label ?protein_id .
+ }
+}

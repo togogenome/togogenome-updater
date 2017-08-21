@@ -1,0 +1,14 @@
+PREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+CONSTRUCT
+{
+  ?tax rdfs:subClassOf ?parent
+}
+WHERE {
+  GRAPH <http://togogenome.org/graph/refseq> { ?tax a insdc:Taxonomy . }
+  GRAPH <http://togogenome.org/graph/taxonomy>
+  {
+    ?tax rdfs:subClassOf* ?parent .
+  }
+}

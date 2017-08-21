@@ -1,0 +1,19 @@
+SPARQL
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT ?togo_gene ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?protein; separator = "|||") AS ?protein_ids  ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?ref; separator = "|||") AS ?xref_uris
+WHERE {
+  GRAPH <http://togogenome.org/graph/text_search/protein_gene> {
+    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
+    ?protein <http://togogenome/uptg_mapping> ?togo_gene
+  }
+  GRAPH <http://togogenome.org/graph/uniprot> {
+    ?protein rdfs:seeAlso ?ref .
+    ?ref up:database ?database .
+    ?database up:category ?category ;
+      up:abbreviation ?abbr .
+  }
+} GROUP BY ?togo_gene
+;

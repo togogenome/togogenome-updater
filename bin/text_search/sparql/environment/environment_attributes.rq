@@ -1,0 +1,16 @@
+SPARQL
+PREFIX meo: <http://purl.jp/bio/11/meo/>
+SELECT
+  ?meo_id ("^@" AS ?delimit1)
+  (GROUP_CONCAT(DISTINCT ?meo_label; separator="|||") AS ?meo_label) ("^@" AS ?delimit2)
+  (GROUP_CONCAT(DISTINCT ?meo_definition; separator="|||") AS ?meo_definition) ("^@" AS ?delimit3)
+  (GROUP_CONCAT(DISTINCT ?exact_synonym; separator="|||") AS ?exact_synonyms)
+FROM <http://togogenome.org/graph/meo>
+WHERE
+{
+  ?meo_id a owl:Class .
+  ?meo_id rdfs:label ?meo_label .
+  OPTIONAL { ?meo_id meo:MEO_0000443 ?meo_definition . }
+  OPTIONAL { ?meo_id meo:MEO_0000776 ?exact_synonym . }
+} GROUP BY ?meo_id
+;

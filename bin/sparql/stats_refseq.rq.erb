@@ -1,0 +1,52 @@
+PREFIX obo:    <http://purl.obolibrary.org/obo/>
+PREFIX sio:    <http://semanticscience.org/resource/>
+PREFIX insdc:    <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
+
+SELECT *
+FROM <http://togogenome.org/graph/refseq>
+WHERE
+{
+  {
+    SELECT
+      (COUNT(DISTINCT ?gene) AS ?num_gene)
+      (COUNT(DISTINCT ?pseudogene) AS ?num_pseudogene)
+      (COUNT(DISTINCT ?rrna) AS ?num_rrna)
+      (COUNT(DISTINCT ?trna) AS ?num_trna)
+      (COUNT(DISTINCT ?mrna) AS ?num_mrna)
+      (COUNT(DISTINCT ?cds) AS ?num_cds)
+      (COUNT(DISTINCT ?exon) AS ?num_exon)
+      (COUNT(DISTINCT ?ncrna) AS ?num_ncrna)
+      (COUNT(DISTINCT ?other) AS ?num_other)
+    WHERE
+    {
+      <http://identifiers.org/refseq/<%= rsid %>> insdc:sequence ?seq .
+      ?feature obo:so_part_of* ?seq .
+
+      {
+        ?gene a ?type FILTER(?type = insdc:Gene && ?gene = ?feature)
+        MINUS { ?gene insdc:pseudo true . }
+      }
+      UNION
+      {
+        ?pseudogene a ?type FILTER(?type = insdc:Gene && ?pseudogene = ?feature)
+        ?pseudogene insdc:pseudo true .
+      }
+      UNION
+      { ?rrna a ?type FILTER(?type = insdc:Ribosomal_RNA && ?rrna = ?feature) }
+      UNION
+      { ?trna a ?type FILTER(?type = insdc:Transfer_RNA && ?trna = ?feature) }
+      UNION
+      { ?mrna a ?type FILTER(?type = insdc:Messenger_RNA && ?mrna = ?feature) }
+      UNION
+      { ?cds a ?type FILTER(?type = insdc:Coding_Sequence && ?cds = ?feature) }
+      UNION
+      { ?exon a ?type FILTER(?type = insdc:Exon && ?exon = ?feature) }
+      UNION
+      { ?ncrna a ?type FILTER(?type = insdc:Non_Coding_RNA && ?ncrna = ?feature) }
+      UNION
+      { ?other a ?type FILTER(!(?type IN (insdc:Gene, insdc:Ribosomal_RNA, insdc:Transfer_RNA, insdc:Messenger_RNA, insdc:Coding_Sequence, insdc:Exon, insdc:Non_Coding_RNA)) && ?other = ?feature) }
+    }
+  }
+  <http://identifiers.org/refseq/<%= rsid %>> insdc:sequence ?seq .
+  ?seq insdc:sequence_length ?seq_length .
+}

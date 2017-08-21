@@ -1,0 +1,10 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+PREFIX pfam: <http://purl.uniprot.org/pfam/>
+
+SELECT DISTINCT ?pfam ?pfam_info
+FROM <http://togogenome.org/graph/uniprot>
+{
+  VALUES ?pfam { pfam:<%= pfam_id %> }
+  ?pfam up:signatureSequenceMatch ?pfam_info .
+}

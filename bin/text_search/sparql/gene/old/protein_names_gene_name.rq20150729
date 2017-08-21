@@ -1,0 +1,34 @@
+SPARQL
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?togo_gene ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?protein; separator = "|||") AS ?protein_ids  ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?gene_name; separator = "|||") AS ?up_gene_names ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?synonyms_name; separator = "|||") AS ?up_synonyms_names ("^@" AS ?delimit4)
+  GROUP_CONCAT(DISTINCT ?locus_name; separator = "|||") AS ?up_locus_tags ("^@" AS ?delimit5)
+  GROUP_CONCAT(DISTINCT ?orf_name; separator = "|||") AS ?up_orf_names
+WHERE {
+  GRAPH <http://togogenome.org/graph/text_search/protein_gene> {
+    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
+    ?protein <http://togogenome/uptg_mapping> ?togo_gene
+  }
+  GRAPH <http://togogenome.org/graph/uniprot> {
+    # Gene names
+    ?protein up:encodedBy ?gene .
+
+    ## Name:
+    OPTIONAL { ?gene skos:prefLabel ?gene_name . }
+
+    ## Synonyms:
+    OPTIONAL { ?gene skos:altLabel ?synonyms_name . }
+
+    ## Ordered Locus Names:
+    OPTIONAL { ?gene up:locusName ?locus_name . }
+
+    ## ORF Names:
+    OPTIONAL { ?gene up:orfName ?orf_name . }
+  }
+} GROUP BY ?togo_gene
+;

@@ -1,0 +1,218 @@
+{
+  "stanzas": [
+    {
+      "stanza_name" : "gene_attributes",
+      "queries" : [
+        {
+          "query_name" : "gene_attributes",
+          "columns" : [ 
+            {
+               "column_name" : "gene_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "locus_tags", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "gene_names", 
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "sequence_labels", 
+               "column_number" : 3 
+            },
+            {
+               "column_name" : "refseq_labels", 
+               "column_number" : 4
+            },
+            {
+               "column_name" : "sequence_organism_names", 
+               "column_number" : 5
+            }
+          ]
+        } 
+      ]
+    },
+    {
+      "stanza_name" : "protein_cross_references",
+      "queries" : [
+        {
+          "query_name" : "protein_cross_references",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_xref_categories", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "up_xref_abbrs",
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "up_xref_ids",
+               "column_number" : 3 
+            }
+          ]
+        } 
+      ]
+    },
+    {
+      "stanza_name" : "protein_references",
+      "queries" : [
+        {
+          "query_name" : "protein_references",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_ref_pubmed_ids", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "up_ref_citation_names",
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "up_ref_citation_titles",
+               "column_number" : 3
+            },
+            {
+               "column_name" : "up_ref_citation_authors",
+               "column_number" : 4
+            }
+          ]
+        } 
+      ]
+    },
+    {
+      "stanza_name" : "protein_sequence_annotation",
+      "queries" : [
+        {
+          "query_name" : "protein_sequence_annotation",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_seq_anno_parent_labels", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "up_seq_anno_labels", 
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "up_seq_anno_comments", 
+               "column_number" : 3 
+            },
+            {
+               "column_name" : "up_seq_anno_feature_ids", 
+               "column_number" : 4
+            }
+          ]
+        } 
+      ]
+    },
+    {
+      "stanza_name" : "protein_names",
+      "queries" : [
+        {
+          "query_name" : "protein_names_gene_name",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_gene_names", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "up_synonyms_names", 
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "up_locus_tags", 
+               "column_number" : 3 
+            },
+            {
+               "column_name" : "up_orf_names", 
+               "column_number" : 4
+            }
+          ]
+        },
+        {
+          "query_name" : "protein_names_summary",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_recommended_names", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "up_ec_names", 
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "up_alternative_names", 
+               "column_number" : 3 
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "protein_ontologies",
+      "queries" : [
+        {
+          "query_name" : "protein_ontologies_keywords",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_keyword_root_names", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "up_keyword_names", 
+               "column_number" : 2 
+            }
+          ]
+        },
+        {
+          "query_name" : "protein_ontologies_go",
+          "columns" : [ 
+            {
+               "column_name" : "uniprot_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "up_go_names", 
+               "column_number" : 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

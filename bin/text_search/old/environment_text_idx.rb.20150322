@@ -1,0 +1,129 @@
+#!/usr/bin/env ruby
+
+require 'httpclient'
+require 'json'
+require 'erb'
+require 'fileutils'
+require 'tempfile'
+require "../sparql.rb"
+require 'ltsv'
+
+class EnvironmentTextSearch
+  def initialize(endpoint)
+    @endpoint = SPARQL.new(endpoint)
+    @base_dir = File.dirname(__FILE__)
+  end  
+  
+  def meo_id_list()
+    sparql = "#{@base_dir}/sparql/get_meo_list.rq"
+    result = ""
+
+    @endpoint.query(File.read(sparql), :format => 'json') do |json|
+      result += json
+    end
+
+    results = JSON.parse(result)["results"]["bindings"]
+    results.map do |entry|
+      entry['meo_id']['value']
+    end
+  end
+
+  def environment_attributes_data(meo_list)
+    environment_data = {}
+    sparql = "#{@base_dir}/sparql/environment_attributes_text_v2.erb"
+    result = ""
+    @endpoint.query(File.read(sparql), :format => 'json') do |json|
+      result += json
+    end
+    results = JSON.parse(result)["results"]["bindings"]
+    results.each do |entry|
+      meo_no = entry['meo_no']['value']
+      meo_label = entry['meo_label']['value']
+      meo_def = entry['meo_definition'] == nil ? "" : entry['meo_definition']['value']
+      exact_synonyms = entry['exact_synonyms'] == nil ? "" : entry['exact_synonyms']['value']
+
+      values = {:meo_no => meo_no, :meo_label => meo_label, :meo_definition => meo_def, :exact_synonyms => exact_synonyms }
+      environment_data[meo_no] = values
+    end
+    environment_data
+  end
+
+  def environment_inhabitants_data(meo_list)
+    environment_data = {} 
+    meo_list.each do |meo_id|
+    #  next if meo_id != "http://purl.jp/bio/11/meo/MEO_0000029"
+      # From gold data
+      template = File.read("#{@base_dir}/sparql/environment_inhabitants_1.erb")
+      sparql = ERB.new(template).result(binding)
+      gold_result = ""
+      @endpoint.query(sparql, :format => 'json') do |json|
+        gold_result += json
+      end
+      gold_results = JSON.parse(gold_result)["results"]["bindings"]
+      # From strain data
+      template = File.read("#{@base_dir}/sparql/environment_inhabitants_2.erb")
+      sparql = ERB.new(template).result(binding)
+      brc_result = ""
+      @endpoint.query(sparql, :format => 'json') do |json|
+        brc_result += json
+      end
+      brc_results = JSON.parse(brc_result)["results"]["bindings"]
+ 
+      result_list = gold_results.concat(brc_results)
+      source_ids = []
+      organism_names = []      
+      isolations = []
+      meo_labels = []
+      result_list.each do |entry|
+        source_ids.push(entry['source_id']['value'])
+        organism_names.push(entry['organism_name'] == nil ? "" : entry['organism_name']['value'])
+        isolations.push(entry['isolation'] == nil ? "" : entry['isolation']['value'])
+        meo_labels.push(entry['meo_labels'] == nil ? "" : entry['meo_labels']['value'])
+      end
+      meo_no = meo_id.split("/").last
+      source_ids.uniq.join(" ")
+      values = {:meo_no => meo_no,
+                :source_ids => source_ids.uniq.join(" "),
+                :organism_name => organism_names.uniq.join(" "),
+                :isolation => isolations.uniq.join(" "),
+                :source_meo_labels => meo_labels.uniq.join(" ")}
+      environment_data[meo_no] = values
+    end
+    environment_data
+  end
+  def output_ltsv(meo_list, attr_data, inhabt_data)
+    meo_list.each do |meo_id|
+     # next if meo_id != "http://purl.jp/bio/11/meo/MEO_0000029"
+      meo_no = meo_id.split("/").last
+ 
+      attr_value = attr_data[meo_no]
+      inhabit_value = inhabt_data[meo_no]
+      line = attr_value.merge(inhabit_value)
+      puts LTSV.dump(line)
+    end
+  end
+  def output_json(meo_list, attr_data, inhabt_data)
+    #result_hash = {}
+    result_array = []
+    meo_list.each do |meo_id|
+     # next if meo_id != "http://purl.jp/bio/11/meo/MEO_0000029"
+      meo_no = meo_id.split("/").last
+ 
+      attr_value = attr_data[meo_no]
+      inhabit_value = inhabt_data[meo_no]
+      #result_hash[meo_no] = attr_value.merge(inhabit_value) 
+      result_array.push(attr_value.merge(inhabit_value)) 
+    end
+    #puts JSON.pretty_generate(result_hash)
+    puts JSON.pretty_generate(result_array)
+  end
+end
+
+env_search = EnvironmentTextSearch.new(ARGV[0])
+meo_list = env_search.meo_id_list()
+$stderr.puts("meo_list size: #{meo_list.size}")
+attr_data = env_search.environment_attributes_data(meo_list)
+$stderr.puts("done environment_attributes")
+inhabitants_data = env_search.environment_inhabitants_data(meo_list)
+$stderr.puts("done environment_inhabitants")
+env_search.output_json(meo_list, attr_data, inhabitants_data)

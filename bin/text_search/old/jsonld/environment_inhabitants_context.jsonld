@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "togo_env": "http://togogenome.org/environment/",
+    "meo_id":       "http://togogenome.org/environment/text/meo_id",
+    "source_ids":       "http://togogenome.org/environment/text/source_ids",
+    "organism_names":       "http://togogenome.org/environment/text/organism_names",
+    "meo_labels":       "http://togogenome.org/environment/text/meo_labels",
+    "isolations":       "http://togogenome.org/environment/text/isolations"
+  }
+}

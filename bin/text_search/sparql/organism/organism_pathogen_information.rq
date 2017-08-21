@@ -1,0 +1,26 @@
+SPARQL
+DEFINE sql:select-option "order"
+PREFIX pdo: <http://purl.jp/bio/11/pdo/>
+
+SELECT ?parent_id ("^@" AS ?delimit1)
+ (GROUP_CONCAT(DISTINCT ?organismName; SEPARATOR = "|||") AS ?organismNameSet) ("^@" AS ?delimit2)
+ (GROUP_CONCAT(DISTINCT ?diseaseName; SEPARATOR = "|||") AS ?diseaseNameSet) ("^@" AS ?delimit3)
+ (GROUP_CONCAT(DISTINCT ?infectiousType; SEPARATOR = "|||") AS ?infectiousTypes) ("^@" AS ?delimit4)
+ (GROUP_CONCAT(DISTINCT ?strainType; SEPARATOR = "|||") AS ?strainTypes)
+WHERE
+{
+  GRAPH <http://togogenome.org/graph/pdo_mapping> {
+    ?child_tax pdo:isAssociatedTo ?blank .
+    ?blank pdo:mayCaused | pdo:isRelatedTo ?disease .
+    OPTIONAL { ?child_tax pdo:isAssociatedTo/pdo:infectiousType ?infectiousType . }
+    OPTIONAL { ?child_tax pdo:isAssociatedTo/pdo:strainType ?strainType . }
+  }
+  GRAPH <http://togogenome.org/graph/pdo> {
+    ?disease rdfs:label ?diseaseName .
+  }
+   GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?child_tax rdfs:subClassOf* ?parent_id .
+    ?child_tax rdfs:label ?organismName .
+  }
+} GROUP BY ?parent_id
+;

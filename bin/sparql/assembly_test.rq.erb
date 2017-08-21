@@ -1,0 +1,8 @@
+PREFIX ass: <http://www.ncbi.nlm.nih.gov/assembly/>
+SELECT DISTINCT ?refseq_accession
+FROM <http://togogenome.org/graph/assembly_report>
+WHERE
+{
+ ?s ass:refseq <http://identifiers.org/refseq/<%= rsid %>> .
+ ?s ass:refseq_accession ?refseq_accession
+}

@@ -1,0 +1,10 @@
+CONSTRUCT
+{
+  ?meo_id rdfs:subClassOf ?parent_meo_id
+}
+FROM <http://togogenome.org/graph/meo>
+WHERE
+{
+  ?meo_id a owl:Class .
+  ?meo_id rdfs:subClassOf* ?parent_meo_id
+}

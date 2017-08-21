@@ -1,0 +1,15 @@
+DEFINE sql:select-option "order"
+SELECT ?protein ("^@" AS ?delimit1) ?togo_gene
+WHERE
+{
+ GRAPH <http://togogenome.org/graph/text_search/protein_list>
+ {
+   ?protein ?p ?o 
+ }
+ GRAPH <http://togogenome.org/graph/tgup>
+ {
+  ?id_up rdfs:seeAlso ?protein .
+  ?togo_gene rdfs:seeAlso ?id_up .
+  ?togo_gene skos:exactMatch ?id_gene.
+ }
+}

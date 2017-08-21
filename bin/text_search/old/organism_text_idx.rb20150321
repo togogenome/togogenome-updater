@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+require 'httpclient'
+require 'json'
+require 'erb'
+require 'fileutils'
+require 'tempfile'
+require "../sparql.rb"
+require 'ltsv'
+
+class OrganismTextSearch
+  def initialize(endpoint)
+    @endpoint = SPARQL.new(endpoint)
+    @base_dir = File.dirname(__FILE__)
+  end
+
+  def tax_id_list()
+    sparql = "#{@base_dir}/sparql/organism/get_tax_list.rq"
+    result = ""
+
+    @endpoint.query(File.read(sparql), :format => 'json') do |json|
+      result += json
+    end
+
+    results = JSON.parse(result)["results"]["bindings"]
+    results.map do |entry|
+      entry['tax_id']['value']
+    end
+  end
+  def genome_cross_references(tax_list)
+    organism_data = {}
+#    count = 0
+    tax_list.each do |tax_id|
+      next if tax_id != "http://identifiers.org/taxonomy/1148"
+      template = File.read("#{@base_dir}/sparql/organism/genome_cross_references.erb")
+      sparql = ERB.new(template).result(binding)
+      result = ""
+      @endpoint.query(sparql, :format => 'json') do |json|
+        result += json
+      end
+      results = JSON.parse(result)["results"]["bindings"]
+#      count += 1
+#      $stderr.puts(count.to_s) if count%10 == 0
+      next if results.size == 0
+      tax_no = tax_id.split("/").last
+      values = {:tax_no => tax_no,
+                :bioproject_ids => results.first['bioproject_ids']['value'],
+                :refseq_ids => results.first['refseq_ids']['value'],
+                :xref_ids => results.first['xref_ids']['value']}
+      organism_data[tax_no] = values
+    end
+    organism_data
+  end
+  def output_json(tax_list, genome_xref_data)
+    result_hash = {}
+    tax_list.each do |tax_id|
+      next if tax_id != "http://identifiers.org/taxonomy/1148"
+      tax_no = tax_id.split("/").last
+
+      genome_xref_value = genome_xref_data[tax_no]
+      result_hash[tax_no] = genome_xref_value 
+    end
+    puts JSON.pretty_generate(result_hash)
+  end
+end
+organism_search = OrganismTextSearch.new(ARGV[0])
+tax_list = organism_search.tax_id_list()
+genome_xref = organism_search.genome_cross_references(tax_list) # 18min
+organism_search.output_json(tax_list, genome_xref) #attr_data, inhabitants_data)

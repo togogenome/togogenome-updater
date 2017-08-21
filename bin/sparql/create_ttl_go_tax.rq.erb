@@ -1,0 +1,20 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+
+CONSTRUCT
+{
+  ?tax_uri rdfs:seeAlso ?go_uri
+}
+WHERE {
+  SELECT DISTINCT ?go_uri ?tax_uri
+  WHERE {
+    GRAPH <http://togogenome.org/graph/tgup> {
+      ?togogenome rdfs:seeAlso ?tax_uri .
+      FILTER (?tax_uri = <<%= tax_uri %>>) .
+      ?togogenome rdfs:seeAlso ?uniprot_id .
+    }
+    GRAPH <http://togogenome.org/graph/goup> {
+      ?go_uri up:classifiedWith ?uniprot_id .
+    }
+  }
+}

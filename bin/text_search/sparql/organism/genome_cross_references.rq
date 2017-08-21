@@ -1,0 +1,46 @@
+SPARQL
+DEFINE sql:select-option "order"
+prefix insdc:  <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
+prefix obo:    <http://purl.obolibrary.org/obo/>
+
+SELECT ?tax_id ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?desc; separator = "|||") AS ?refseq_definitions ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?bp_label; separator = "|||") AS ?bioproject_ids ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?rs; separator = "|||") AS ?refseq_ids ("^@" AS ?delimit4)
+  GROUP_CONCAT(DISTINCT ?label; separator = "|||") AS ?xref_ids
+{
+  GRAPH <http://togogenome.org/graph/refseq>
+  {
+    ?tax_id a insdc:Taxonomy  .
+    ?source rdfs:seeAlso ?tax_id ;
+      obo:so_part_of ?seq .
+    ?refseq insdc:sequence ?seq ;
+      a insdc:Entry ;
+      insdc:definition ?desc ;
+      insdc:sequence_version ?rs ;
+      insdc:dblink  ?bp .
+    ?bp rdf:type insdc:BioProject ;
+      rdfs:label ?bp_label .
+
+    {
+      ?refseq insdc:dblink ?xref .
+      ?xref rdfs:label ?label ;
+        rdf:type ?xref_type .
+    }
+    UNION
+    {
+      ?refseq rdfs:seeAlso ?xref .
+      ?xref insdc:sequence_version ?label ;
+        rdf:type ?xref_type .
+      FILTER (?xref_type IN (insdc:RefSeq))
+    }
+    UNION
+    {
+      ?refseq rdfs:seeAlso ?xref .
+      ?xref rdfs:label ?label ;
+        rdf:type ?xref_type .
+      FILTER (! ?xref_type IN (insdc:Entry, insdc:RefSeq))
+    }
+  }
+} GROUP BY ?tax_id
+;

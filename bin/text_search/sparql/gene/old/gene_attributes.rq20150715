@@ -1,0 +1,36 @@
+SPARQL
+DEFINE sql:select-option "order"
+PREFIX obo: <http://purl.obolibrary.org/obo/>
+PREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
+
+SELECT ?togo_gene ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?locus_tag; separator = "|||") AS ?locus_tags ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?gene_name; separator = "|||") AS ?gene_names ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?seq_label; separator = "|||") AS ?sequence_labels ("^@" AS ?delimit4)
+  GROUP_CONCAT(DISTINCT ?refseq_label; separator = "|||") AS ?refseq_labels ("^@" AS ?delimit5)
+  GROUP_CONCAT(DISTINCT ?organism; separator = "|||") AS ?sequence_organism_names
+{
+  GRAPH <http://togogenome.org/graph/text_search/gene_list>
+  {
+    # VALUES ?togo_gene { <http://togogenome.org/gene/103690:all1455> }
+    ?togo_gene skos:exactMatch ?feature_uri
+  }
+  GRAPH <http://togogenome.org/graph/refseq>
+  {
+    VALUES ?feature_type { obo:SO_0000704 obo:SO_0000252 obo:SO_0000253 }
+    ?feature_uri  rdfs:subClassOf ?feature_type ;
+      rdfs:label ?gene_label .
+    ?feature_uri obo:so_part_of ?seq .
+    ?seq rdfs:subClassOf ?seq_type .
+    ?refseq_link insdc:sequence ?seq ;
+      insdc:definition ?seq_label ;
+      insdc:sequence_version ?refseq_label ;
+      insdc:sequence_version ?refseq_ver ;
+      insdc:organism ?organism .
+    ?feature_uri obo:RO_0002162 ?tax_link .
+
+    OPTIONAL { ?feature_uri insdc:gene ?gene_name }
+    OPTIONAL { ?feature_uri insdc:locus_tag ?locus_tag }
+  }
+} GROUP BY ?togo_gene
+;

@@ -1,0 +1,62 @@
+[
+  {
+   "stanza_name": "environment_attributes",
+   "q" : "spring"
+  },
+  {
+   "stanza_name": "environment_inhabitants",
+   "q" : "ATCC"
+  },
+  {
+   "stanza_name": "genome_cross_references",
+   "q" : "complete genome"
+  },
+  {
+   "stanza_name": "organism_cross_references",
+   "q" : "Gc00168"
+  },
+  {
+   "stanza_name": "organism_culture_collections",
+   "q" : "Streptomyces"
+  },
+  {
+   "stanza_name": "organism_medium_information",
+   "q" : "Yeast"
+  },
+  {
+   "stanza_name": "organism_names",
+   "q" : "Nostoc"
+  },
+  {
+   "stanza_name": "organism_pathogen_information",
+   "q" : "melitensis"
+  },
+  {
+   "stanza_name": "organism_phenotype",
+   "q" : "Gram negative"
+  },
+  {
+   "stanza_name": "gene_attributes",
+   "q" : "rpoB"
+  },
+  {
+   "stanza_name": "protein_cross_references",
+   "q" : "P51587"
+  },
+  {
+   "stanza_name": "protein_names",
+   "q" : "susceptibility"
+  },
+  {
+   "stanza_name": "protein_ontologies",
+   "q" : "transmembrane"
+  },
+  {
+   "stanza_name": "protein_references",
+   "q" : "cyanobacterium"
+  },
+  {
+   "stanza_name": "protein_sequence_annotation",
+   "q" : "carboxylate"
+  }
+]

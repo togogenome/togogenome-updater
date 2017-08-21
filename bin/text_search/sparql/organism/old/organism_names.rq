@@ -1,0 +1,27 @@
+# This query's search scope is taxonomy which is used in RefSseq data
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+SELECT ?tax_id 
+  GROUP_CONCAT(DISTINCT ?scientific_name; separator = ",") AS ?name
+  GROUP_CONCAT(DISTINCT ?synonym; separator = ",") AS ?synonyms
+WHERE
+{
+  VALUES ?name_type
+  {
+    tax:scientificName tax:synonym tax:preferredSynonym tax:acronym tax:preferredAcronym tax:anamorph tax:teleomorph
+    tax:misnomer tax:commonName tax:preferredCommonName tax:inPart tax:includes tax:equivalentName
+    tax:genbankSynonym tax:genbankCommonName tax:authority tax:misspelling
+  }
+  { 
+    SELECT DISTINCT ?tax_id
+    { 
+      GRAPH <http://togogenome.org/graph/tgtax> {
+        ?child_tax rdfs:subClassOf ?tax_id .
+      }
+    }
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?tax_id  ?name_type ?synonym .
+    ?tax_id  tax:scientificName ?scientific_name .
+  }
+} GROUP BY ?tax_id

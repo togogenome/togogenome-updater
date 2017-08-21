@@ -1,0 +1,11 @@
+DEFINE sql:select-option "order"
+prefix skos:   <http://www.w3.org/2004/02/skos/core#>
+
+SELECT DISTINCT(?tax_id) AS ?tax_id
+FROM <http://togogenome.org/graph/tgup>
+WHERE
+{
+ ?togo_gene skos:exactMatch ?gene_url ;
+   rdfs:seeAlso ?tax_id .
+ ?tax_id rdf:type <http://identifiers.org/taxonomy> .
+} ORDER BY ?tax_id

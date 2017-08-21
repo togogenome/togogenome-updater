@@ -1,0 +1,32 @@
+PREFIX up: <http://purl.uniprot.org/core/>
+CONSTRUCT {
+  ?up_tax  rdfs:subClassOf ?parent_taxonomy
+}
+WHERE
+{
+  {
+    SELECT DISTINCT ?up_tax
+    WHERE
+    {
+      GRAPH <http://togogenome.org/graph/text_search/protein_list> {
+        ?protein rdf:type up:Protein .
+      }
+      GRAPH <http://togogenome.org/graph/tgup> {
+        ?idx_up rdfs:seeAlso ?protein  .
+        ?idx_up rdf:type <http://identifiers.org/uniprot> .
+        ?idx_up rdfs:seeAlso ?idx_tax  .
+      }
+      GRAPH  <http://togogenome.org/graph/taxonomy> {
+        ?idx_tax rdfs:seeAlso ?up_tax .
+      }
+      GRAPH  <http://togogenome.org/graph/uniprot> {
+        ?up_tax rdf:type up:Taxon .
+      }
+    }
+  }
+  ?up_tax rdfs:subClassOf* ?parent_taxonomy .
+  # 真核は階層が多いので rank のあるものだけ表示
+  ?parent_taxonomy up:rank ?rank .
+}
+#usage: ../../../../sparql_construct.rb http://ep.dbcls.jp/sparql-import uniprot_tax_subclass_reasoner.rq > uniprot_tax_subclass_reasoner.ttl
+

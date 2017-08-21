@@ -1,0 +1,29 @@
+SPARQL
+DEFINE sql:select-option "order"
+
+PREFIX mccv: <http://purl.jp/bio/01/mccv#>
+PREFIX meo: <http://purl.jp/bio/11/meo/>
+PREFIX taxo: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+SELECT
+  ?meo_root ("^@" AS ?delimit1)
+  (GROUP_CONCAT(DISTINCT ?source_id; separator = "|||") AS ?source_ids) ("^@" AS ?delimit2)
+  (GROUP_CONCAT(DISTINCT ?organism_name; separator = "|||") AS ?organism_names) ("^@" AS ?delimit3)
+  (GROUP_CONCAT(DISTINCT ?meo_label; separator = "|||") AS ?meo_labels)
+FROM <http://togogenome.org/graph/gold>
+FROM <http://togogenome.org/graph/meo>
+FROM <http://togogenome.org/graph/taxonomy>
+{
+  VALUES ?meo_mapping { meo:MEO_0000437 meo:MEO_0000440 }
+  ?meo_root a owl:Class .
+  ?meo_id rdfs:subClassOf* ?meo_root .
+  ?gold ?meo_mapping ?meo_id .
+  ?meo_id rdfs:label ?meo_label .
+  OPTIONAL
+  {
+    ?gold mccv:MCCV_000020 ?tax_id .
+    ?tax_id taxo:scientificName ?organism_name
+  }
+  BIND  (REPLACE(STR(?gold) ,"http://www.genomesonline.org/cgi-bin/GOLD/GOLDCards.cgi\\?goldstamp=" ,"" ) AS ?source_id)
+} GROUP BY ?meo_root
+;

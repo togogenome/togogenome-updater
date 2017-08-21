@@ -1,0 +1,38 @@
+{
+"@context" :
+{
+  "tax_id": "http://togogenome.org/igenome_cross_references/tax_id",
+  "refseq_definitions": "http://togogenome.org/igenome_cross_references/refseq_definitions",
+  "bioproject_ids": "http://togogenome.org/igenome_cross_references/bioproject_ids",
+  "refseq_ids": "http://togogenome.org/igenome_cross_references/refseq_ids",
+  "xref_ids": "http://togogenome.org/igenome_cross_references/xref_ids"
+}
+,
+"@graph" :
+[
+{
+  "@id": "http://togogenome.org/organism/658599",
+  "tax_id": "658599",
+  "refseq_definitions": "Chlamydia trachomatis L2tet1 chromosome, whole genome shotgun sequence, complete genome.",
+  "bioproject_ids": "PRJNA50783",
+  "refseq_ids": "NZ_ACUI01000001.1",
+  "xref_ids": "GI:301334996,NZ_ACUI01000001.1,PRJNA50783"
+},
+{
+  "@id": "http://togogenome.org/organism/570417",
+  "tax_id": "570417",
+  "refseq_definitions": "Wolbachia endosymbiont of Culex quinquefasciatus Pel chromosome, complete genome.",
+  "bioproject_ids": "PRJNA61645",
+  "refseq_ids": "NC_010981.1",
+  "xref_ids": "18550617,GI:190570478,NC_010981.1,PRJNA61645"
+},
+{
+  "@id": "http://togogenome.org/organism/273063",
+  "tax_id": "273063",
+  "refseq_definitions": "Sulfolobus tokodaii str. 7 chromosome, complete genome.",
+  "bioproject_ids": "PRJNA57807",
+  "refseq_ids": "NC_003106.2",
+  "xref_ids": "11572479,GI:24473558,NC_003106.2,PRJNA57807"
+}
+]
+}

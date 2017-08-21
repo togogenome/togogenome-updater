@@ -1,0 +1,27 @@
+# This query's search scope is taxonomy which is used in RefSeq data
+DEFINE sql:select-option "order"
+PREFIX pdo: <http://purl.jp/bio/11/pdo/>
+
+SELECT ?tax_id
+ (GROUP_CONCAT(DISTINCT ?organismName; SEPARATOR = ", ") AS ?pathogen_organism_names)
+ (GROUP_CONCAT(DISTINCT ?diseaseName; SEPARATOR = ", ") AS ?disease_names)
+ (GROUP_CONCAT(DISTINCT ?infectiousType; SEPARATOR = ", ") AS ?infectious_types)
+ (GROUP_CONCAT(DISTINCT ?strainType; SEPARATOR = ", ") AS ?pathogen_strain_types)
+WHERE
+{
+  GRAPH <http://togogenome.org/graph/tgtax> {
+    ?child_tax rdfs:subClassOf ?tax_id .
+  }
+  GRAPH <http://togogenome.org/graph/pdo_mapping> {
+    ?child_tax pdo:isAssociatedTo ?blank .
+    ?blank ?p ?disease FILTER (?p IN(pdo:mayCaused, pdo:isRelatedTo)).
+    OPTIONAL { ?child_tax pdo:isAssociatedTo/pdo:infectiousType ?infectiousType . }
+    OPTIONAL { ?child_tax pdo:isAssociatedTo/pdo:strainType ?strainType . }
+  }
+  GRAPH <http://togogenome.org/graph/pdo> {
+    ?disease rdfs:label ?diseaseName .
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?child_tax rdfs:label ?organismName .
+  }
+} GROUP BY ?tax_id

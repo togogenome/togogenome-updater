@@ -1,0 +1,237 @@
+{
+  "stanzas": [
+    {
+      "stanza_name" : "genome_cross_references",
+      "queries" : [
+        {
+          "query_name" : "genome_cross_references",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "refseq_definitions", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "bioproject_ids", 
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "refseq_ids", 
+               "column_number" : 3 
+            },
+            {
+               "column_name" : "xref_ids", 
+               "column_number" : 4
+            }
+          ]
+        } 
+      ]
+    },
+    {
+      "stanza_name" : "organism_cross_references",
+      "queries" : [
+        {
+          "query_name" : "genome_cross_references",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "refseq_definitions", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "bioproject_ids", 
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "refseq_ids", 
+               "column_number" : 3 
+            },
+            {
+               "column_name" : "xref_ids", 
+               "column_number" : 4
+            }
+          ]
+        },
+        {
+          "query_name" : "organism_cross_references",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "gold_ids", 
+               "column_number" : 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "organism_names",
+      "queries" : [
+        {
+          "query_name" : "organism_names",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "name", 
+               "column_number" : 1
+            },
+            {
+               "column_name" : "synonyms",
+               "column_number" : 2 
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "organism_phenotype",
+      "queries" : [
+        {
+          "query_name" : "organism_phenotype",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "phenotype_values", 
+               "column_number" : 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "organism_culture_collections",
+      "queries" : [
+        {
+          "query_name" : "organism_culture_collections",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "strain_numbers",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "strain_names",
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "isolations",
+               "column_number" : 3
+            },
+            {
+               "column_name" : "meo_labels",
+               "column_number" : 4
+            },
+            {
+               "column_name" : "applications",
+               "column_number" : 5
+            },
+            {
+               "column_name" : "up_alternative_names",
+               "column_number" : 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "organism_pathogen_information",
+      "queries" : [
+        {
+          "query_name" : "organism_pathogen_information",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "organismNameSet",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "diseaseNameSet",
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "infectiousTypes",
+               "column_number" : 3
+            },
+            {
+               "column_name" : "strainTypes",
+               "column_number" : 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "organism_medium_information",
+      "queries" : [
+        {
+          "query_name" : "organism_medium_information",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "medium_ids",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "medium_type_labels",
+               "column_number" : 2 
+            },
+            {
+               "column_name" : "medium_names",
+               "column_number" : 3
+            }
+          ]
+        },
+        {
+          "query_name" : "organism_medium_information_ingredient",
+          "columns" : [ 
+            {
+               "column_name" : "tax_id", 
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "class_labels",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "ingredient_labels",
+               "column_number" : 2 
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

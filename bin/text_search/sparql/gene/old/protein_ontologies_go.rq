@@ -1,0 +1,16 @@
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT ?protein
+  GROUP_CONCAT(DISTINCT ?go_name; separator = ",") AS ?up_go_names
+WHERE {
+  GRAPH <http://togogenome.org/graph/text_search/protein_list> {
+    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P00457> }
+    ?protein rdf:type up:Protein .
+  }
+  GRAPH <http://togogenome.org/graph/text_search/up_ontologies_upgo_reasoner> {
+    ?protein up:classifiedWith ?go_concept .
+  }
+  GRAPH <http://togogenome.org/graph/go> {
+    ?go_concept rdfs:label ?go_name .
+  }
+} GROUP BY ?protein

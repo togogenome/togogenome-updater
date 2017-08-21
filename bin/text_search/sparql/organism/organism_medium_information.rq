@@ -1,0 +1,26 @@
+SPARQL
+PREFIX mccv: <http://purl.jp/bio/01/mccv#>
+PREFIX gmo: <http://purl.jp/bio/11/gmo#>
+PREFIX taxid: <http://identifiers.org/taxonomy/>
+
+SELECT ?tax_id ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?medium_id; separator = "|||") AS ?medium_ids ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?medium_type_label; separator = "|||") AS ?medium_type_labels ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?medium_name; separator = "|||") AS ?medium_names
+FROM <http://togogenome.org/graph/brc>
+FROM <http://togogenome.org/graph/gmo>
+WHERE
+{
+  { SELECT DISTINCT ?medium ?tax_id
+    {
+      ?strain_id mccv:MCCV_000056 ?tax_id .
+      ?strain_id mccv:MCCV_000018 ?medium .
+      FILTER (STRSTARTS(STR(?tax_id), "http://identifiers.org/taxonomy/"))
+    }
+  }
+  ?medium gmo:GMO_000101 ?medium_id .
+  ?medium gmo:GMO_000111 ?medium_type .
+  ?medium_type rdfs:label ?medium_type_label FILTER (lang(?medium_type_label) = "en") .
+  OPTIONAL { ?medium gmo:GMO_000102 ?medium_name } .
+} GROUP BY ?tax_id
+;

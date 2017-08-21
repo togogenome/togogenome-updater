@@ -1,0 +1,18 @@
+DEFINE sql:select-option "order"
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+PREFIX id-tax: <http://identifiers.org/taxonomy/>
+
+SELECT ?tax_domain
+FROM <http://togogenome.org/graph/taxonomy>
+{
+  {
+    SELECT DISTINCT ?tax_domain
+    {
+      VALUES ?tax_id { id-tax:<%= tax_id %> }
+      ?tax_id a tax:Taxon .
+      ?tax_id rdfs:subClassOf* ?tax_domain .
+    }
+  }
+  ?tax_domain  a tax:Taxon 
+  FILTER (?tax_domain IN (id-tax:2, id-tax:2157, id-tax:2759, id-tax:10239, id-tax:12884, id-tax:33208, id-tax:33090))
+}

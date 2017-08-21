@@ -1,0 +1,26 @@
+[
+ {
+  "@id": "http://togogenome.org/environment/MEO_0000618",
+  "http://togogenome.org/environment/text/meo_id": "MEO_0000618",
+  "http://togogenome.org/environment/text/source_ids": "Gc00122,Gi05082,JCM 4769 NBRC 13355",
+  "http://togogenome.org/environment/text/organism_names": "Lactobacillus plantarum WCFS1,Streptomyces horton (Erikson) Pridham et al.",
+  "http://togogenome.org/environment/text/meo_labels": "Saliva,Parotid gland pus",
+  "http://togogenome.org/environment/text/isolations": "\"Pus, a case of parotid abscess\" Pus, parotid abscess"
+ },
+{
+  "@id": "http://togogenome.org/environment/MEO_0000539",
+  "http://togogenome.org/environment/text/meo_id": "MEO_0000539",
+  "http://togogenome.org/environment/text/source_ids": "Gc00626,Gc01797,Gc01798,Gc01887,Gi02798,Gi04117,Gi04453,Gi05604,Gi05696,Gi05853,Gi08963,Gi10825,JCM 12370 JCM 13232 JCM 13389 JCM 13663 NBRC 20070",
+  "http://togogenome.org/environment/text/organism_names": "Bifidobacterium scardovii,Camelus bactrianus,Campylobacter jejuni subsp. doylei 269.97,Lactobacillus johnsonii ATCC 33200,Ochrobactrum intermedium LMG 3301,Psychrobacter sp. 1501(2011),Streptococcus gallolyticus subsp. gallolyticus ATCC 43143,Streptococcus pasteurianus ATCC 43144,Streptococcus pyogenes,Streptococcus salivarius CCHSS3,Streptococcus sanguinis SK1058,Vibrio navarrensis 08-2462,Corynebacterium suicordis Vela et al. 2003 Corynebacterium tuberculostearicum Feurer et al. 2004 Dietzia cinnamea Yassin et al. 2006 Pseudomonas aeruginosa phage YS34 Tepidimonas arfidensis Ko et al.",
+  "http://togogenome.org/environment/text/meo_labels": "Portion of blood,Bone marrow Heart Perianal surface Serum",
+  "http://togogenome.org/environment/text/isolations": "Bone marrow of a patient with leukemia Bovine serum Heart of a pig with pericarditis Human bone marrow, the Philippines Perianal swab of a human with a bone marrow transplant"
+},
+{ 
+  "@id": "http://togogenome.org/environment/MEO_0000534",
+  "http://togogenome.org/environment/text/meo_id": "MEO_0000534",
+  "http://togogenome.org/environment/text/source_ids": "Gi07786,Gi07790,JCM 1118 NBRC 107787",
+  "http://togogenome.org/environment/text/organism_names": "Acinetobacter baumannii OIFC047,Acinetobacter baumannii OIFC087,Atopobium minutum (Hauduroy et al. 1937) Collins and Wallbanks 1993",
+  "http://togogenome.org/environment/text/meo_labels": "Perineum,Perineum",
+  "http://togogenome.org/environment/text/isolations": "Perineal abscess"
+}
+]

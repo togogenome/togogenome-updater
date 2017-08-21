@@ -1,0 +1,32 @@
+SPARQL
+DEFINE sql:select-option "order"
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX up: <http://purl.uniprot.org/core/>
+PREFIX idtax: <http://identifiers.org/taxonomy/>
+
+SELECT ?tax_id ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?phenotype; separator = "|||") AS ?phenotype_values
+WHERE
+{
+  {
+    GRAPH <http://togogenome.org/graph/mpo> {
+      ?mpo_data rdf:type owl:DatatypeProperty .
+    }
+    GRAPH <http://togogenome.org/graph/gold> {
+      ?tax_id ?mpo_data ?phenotype .
+    }
+  }
+  UNION
+  {
+    GRAPH <http://togogenome.org/graph/mpo> {
+      ?mpo_obj rdf:type owl:ObjectProperty .
+      ?phenotype_uri rdfs:label ?phenotype .
+      FILTER (lang(?phenotype) = "en") .
+    }
+    GRAPH <http://togogenome.org/graph/gold> {
+      ?tax_id ?mpo_obj ?phenotype_uri .
+    }
+  }
+  FILTER (STRSTARTS(STR(?tax_id), "http://identifiers.org/taxonomy/"))
+} GROUP BY ?tax_id
+;

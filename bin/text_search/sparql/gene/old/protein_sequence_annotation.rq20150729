@@ -1,0 +1,43 @@
+SPARQL
+PREFIX up: <http://purl.uniprot.org/core/>
+PREFIX faldo: <http://biohackathon.org/resource/faldo#>
+
+SELECT ?togo_gene ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?protein; separator = "|||") AS ?protein_ids  ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?parent_label; separator = "|||") AS ?up_seq_anno_parent_labels ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?label; separator = "|||") AS ?up_seq_anno_labels ("^@" AS ?delimit4)
+  GROUP_CONCAT(DISTINCT ?comment; separator = "|||") AS ?up_seq_anno_comments ("^@" AS ?delimit5)
+  GROUP_CONCAT(DISTINCT ?feature_identifier; separator = "|||") AS ?up_seq_anno_feature_ids
+WHERE {
+  GRAPH <http://togogenome.org/graph/text_search/protein_gene> {
+    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
+    ?protein <http://togogenome/uptg_mapping> ?togo_gene
+  }
+  GRAPH <http://togogenome.org/graph/text_search/up_anno_subclass_reasoner>
+  {
+    ?type rdfs:subClassOf ?parent_type .
+  }
+  GRAPH <http://togogenome.org/graph/uniprot> {
+    ?protein  up:annotation ?annotation .
+
+    ?annotation rdf:type ?type .
+    ?type rdfs:label ?label .
+
+    ?parent_type rdfs:subClassOf up:Sequence_Annotation ;
+                 rdfs:label ?parent_label .
+
+    OPTIONAL { ?annotation rdfs:comment ?comment . }
+
+    ?protein up:sequence ?isoform .
+    BIND( REPLACE( STR(?protein), "http://purl.uniprot.org/uniprot/", "") AS ?up_id)
+    FILTER( REGEX(?isoform, ?up_id))
+    ?isoform rdf:value ?value .
+
+    OPTIONAL {
+      ?annotation rdf:type ?type . 
+      BIND (STR(?annotation) AS ?feature_identifier) .
+      FILTER REGEX(STR(?annotation), 'http://purl.uniprot.org/annotation')
+    }
+ }
+} GROUP BY ?togo_gene
+;
