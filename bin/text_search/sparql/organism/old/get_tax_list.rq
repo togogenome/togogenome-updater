@@ -1,6 +1,0 @@
-SELECT DISTINCT(?parent_tax) AS ?tax_id
-FROM <http://togogenome.org/graph/tgtax>
-WHERE
-{
- ?child_tax rdfs:subClassOf ?parent_tax
-}

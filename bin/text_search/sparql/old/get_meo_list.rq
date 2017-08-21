@@ -1,6 +1,0 @@
-SELECT ?meo_id
-FROM <http://togogenome.org/graph/meo>
-WHERE
-{
-  ?meo_id a owl:Class .
-}
