@@ -617,9 +617,8 @@ namespace :refseq do
     name = set_name
     create_subdir("refseq", name)
     link_current("refseq", name)
-    sh "bin/refseq_list.v2.rb #{ENDPOINT} > #{REFSEQ_WORK_DIR}/refseq_list.json"
-    #sh "bin/wget_refseq.v3.rb #{REFSEQ_WORK_DIR}/refseq_list.json release69 > #{REFSEQ_WORK_DIR}/refseq_wget.log"
-    sh "bin/wget_refseq.v5.rb #{REFSEQ_WORK_DIR}/refseq_list.json > #{REFSEQ_WORK_DIR}/refseq_wget.log"
+    sh "bin/refseq_list.rb #{ENDPOINT} > #{REFSEQ_WORK_DIR}/refseq_list.json"
+    sh "bin/wget_refseq.rb #{REFSEQ_WORK_DIR}/refseq_list.json > #{REFSEQ_WORK_DIR}/refseq_wget.log"
     #delete error data
     sh "perl -pi -e 's/; GO//g' #{REFSEQ_WORK_DIR}/refseq.gb/1883368/PRJNA353681/NC_031927.1"
   end
@@ -635,12 +634,12 @@ namespace :refseq do
   
   #desc "Convert RefSeq to Turtle"
   task :refseq2ttl do
-    sh "bin/refseq2ttl_all.v3.rb #{REFSEQ_WORK_DIR}/refseq_list.json 2> #{REFSEQ_WORK_DIR}/refseq2ttl.log"
+    sh "bin/refseq2ttl_all.rb #{REFSEQ_WORK_DIR}/refseq_list.json 2> #{REFSEQ_WORK_DIR}/refseq2ttl.log"
   end
   
   #desc "Convert RefSeq to FASTA"
   task :refseq2fasta do
-    sh "bin/refseq2fasta.v2.rb > #{REFSEQ_WORK_DIR}/refseq.fasta"
+    sh "bin/refseq2fasta.rb > #{REFSEQ_WORK_DIR}/refseq.fasta"
   end
   
   #desc "Prepare JBrowse conf files"
@@ -738,7 +737,7 @@ namespace :uniprot do
     path = create_subdir('uniprot', name)
     link_current('uniprot', name)
     sh "grep 'RefSeq\\|NCBI_TaxID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat"
-    sh "bin/refseq2up-phase2.v7.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat 2> #{path}/refseq.up.log"
+    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat 2> #{path}/refseq.up.log"
   end
 
   #desc "Load TogoGenome to UniProt mappings"
@@ -750,8 +749,7 @@ namespace :uniprot do
 
   #desc "Copy UniProt prokaryotes subset for TogoGenome"
   task :copy do
-    #sh "bin/copy_uniprot_refseq.v2.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
-    sh "bin/copy_uniprot_refseq.v3.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
+    sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
   end
   
   desc "Load UniProt to TogoGenome"

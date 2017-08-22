@@ -35,7 +35,7 @@ class UniProtPfamStats
 # desc 'output_pfam_info', '指定されたpfam_idの情報をSPARQLで取得してturtleを出力する'
   def output_pfam_info(pfam_id)
     puts pfam_id
-    template = File.read("#{@base_dir}/sparql/get_pfam_info.erb.v2")
+    template = File.read("#{@base_dir}/sparql/get_pfam_info.erb")
     sparql   = ERB.new(template).result(binding)
     result = isql_query(sparql)
     output_ttl(pfam_id, format_tsv(result))
