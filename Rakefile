@@ -540,7 +540,7 @@ namespace :genomes do
     name = set_name
     path = create_subdir('genomes', name)
     link_current('genomes', name)
-    sh "#{RDF_DIR}/togogenome/bin/linksets/cron/assembly" 
+    sh "perl #{RDF_DIR}/togogenome/bin/linksets/ftp/assembly_reports_rsync.pl /data/store/rdf/togogenome/genome"
   end
 
   desc "Convert ASSEBLY_REPORTS to Turtle"
