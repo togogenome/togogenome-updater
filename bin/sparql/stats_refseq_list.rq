@@ -1,8 +1,0 @@
-prefix insdc:    <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
-
-SELECT ?refseq
-FROM <http://togogenome.org/graph/refseq>
-WHERE
-{
-  ?refseq a insdc:Entry . 
-}
