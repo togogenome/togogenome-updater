@@ -24,5 +24,3 @@ Dir.glob("refseq/current/refseq.gb/**/*").each do |file|
     end
   end
 end
-
-

@@ -63,18 +63,10 @@ class WGET_REFSEQ
   end
 end
 
-if ARGV.size < 1 
- puts "./wget_refseq.v3.rb <refseq_list_json> [retry]"
+unless ARGV.size == 2
+ puts "./wget_refseq.rb <refseq_list_json> <output_dir>"
  exit(1)
 end
 
-output_dir = "/data/store/rdf/togogenome/refseq/current/refseq.gb"
-if ARGV.size >= 2
-  previous_dir = "/data/store/rdf/togogenome/refseq/" + ARGV[1] + "/refseq.gb" #TODO get previous version from file
-  puts previous_dir
-  wget_refseq = WGET_REFSEQ.new(ARGV[0], output_dir, previous_dir)#, ARGV[1])
-else
-  wget_refseq = WGET_REFSEQ.new(ARGV[0], output_dir)#, ARGV[1])
-end
+wget_refseq = WGET_REFSEQ.new(ARGV[0], ARGV[1])
 wget_refseq.wget_all()
-

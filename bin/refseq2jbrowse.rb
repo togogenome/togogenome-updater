@@ -183,5 +183,3 @@ sequences.sort.each do |tax_id, seqs|
     file.puts TRACK_LIST.gsub('%SEQ_VERSIONS%', seqs.map{ |seq| '\\"' + seq.refseq + '\\"' }.join(' '))
   end
 end
-
-

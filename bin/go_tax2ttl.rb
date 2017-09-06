@@ -79,7 +79,7 @@ class GO_TAX2RDF
 end
 
 if ARGV.size < 3
- puts "./go_up2ttl.rb <sparql_endpoint> <isql_command> <output_dir> "
+ puts "./go_tax2ttl.rb <sparql_endpoint> <isql_command> <output_dir> "
  exit(1)
 end
 gotax = GO_TAX2RDF.new(ARGV[0], ARGV[1], ARGV[2])

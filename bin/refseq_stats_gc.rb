@@ -14,6 +14,7 @@ class RefseqStats
     @refseq_list = open("#{refseq_json}") do |io|
       JSON.load(io)
     end
+    @refseq_dir = "#{File.expand_path(File.dirname(refseq_json))}"
     @base_dir = File.dirname(__FILE__)
   end
 
@@ -48,7 +49,7 @@ class RefseqStats
       }
       # gc and at count from genbank file
       count = seq_list.inject({at: 0, gc: 0}) do |result, seq_data|
-        seq = open("/data/store/rdf/togogenome/refseq/current/refseq.gb/#{seq_data[:tax_id]}/#{seq_data[:prj_id]}/#{seq_data[:refseq_id]}").read
+        seq = open("#{@refseq_dir}/refseq.gb/#{seq_data[:tax_id]}/#{seq_data[:prj_id]}/#{seq_data[:refseq_id]}").read
         result[:at] += seq.count('a') + seq.count('t')
         result[:gc] += seq.count('g') + seq.count('c')
         result
@@ -107,9 +108,13 @@ class RefseqStats
 
 end
 
+unless ARGV.size == 2
+  puts "./refseq_stats_gc.rb <refseq_list_json> <output_file_path>"
+  exit(1)
+end
+
 refseq_json = ARGV.shift
 output_file = ARGV.shift
 ref_stats = RefseqStats.new(refseq_json)
 stats_data = ref_stats.get_stats_values
 ref_stats.output_ttl(stats_data, output_file)
-

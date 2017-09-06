@@ -540,7 +540,7 @@ namespace :genomes do
     name = set_name
     path = create_subdir('genomes', name)
     link_current('genomes', name)
-    sh "perl #{RDF_DIR}/togogenome/bin/linksets/ftp/assembly_reports_rsync.pl /data/store/rdf/togogenome/genome"
+    sh "perl #{RDF_DIR}/togogenome/bin/linksets/ftp/assembly_reports_rsync.pl /data/store/rdf/togogenome/genomes"
   end
 
   desc "Convert ASSEBLY_REPORTS to Turtle"
@@ -571,7 +571,7 @@ namespace :refseq do
     create_subdir("refseq", name)
     link_current("refseq", name)
     sh "bin/refseq_list.rb #{ENDPOINT} > #{REFSEQ_WORK_DIR}/refseq_list.json"
-    sh "bin/wget_refseq.rb #{REFSEQ_WORK_DIR}/refseq_list.json > #{REFSEQ_WORK_DIR}/refseq_wget.log"
+    sh "bin/wget_refseq.rb #{REFSEQ_WORK_DIR}/refseq_list.json #{REFSEQ_WORK_DIR}/refseq.gb > #{REFSEQ_WORK_DIR}/refseq_wget.log"
     #delete error data
     sh "perl -pi -e 's/; GO//g' #{REFSEQ_WORK_DIR}/refseq.gb/1883368/PRJNA353681/NC_031927.1"
   end
