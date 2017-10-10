@@ -49,9 +49,11 @@ class RefseqStats
       }
       # gc and at count from genbank file
       count = seq_list.inject({at: 0, gc: 0}) do |result, seq_data|
-        seq = open("#{@refseq_dir}/refseq.gb/#{seq_data[:tax_id]}/#{seq_data[:prj_id]}/#{seq_data[:refseq_id]}").read
-        result[:at] += seq.count('a') + seq.count('t')
-        result[:gc] += seq.count('g') + seq.count('c')
+        if File.exist?("#{@refseq_dir}/refseq.gb/#{seq_data[:tax_id]}/#{seq_data[:prj_id]}/#{seq_data[:refseq_id]}")
+          seq = open("#{@refseq_dir}/refseq.gb/#{seq_data[:tax_id]}/#{seq_data[:prj_id]}/#{seq_data[:refseq_id]}").read
+          result[:at] += seq.count('a') + seq.count('t')
+          result[:gc] += seq.count('g') + seq.count('c')
+        end
         result
       end
       count[:tax_id] = entry[:tax_id]
