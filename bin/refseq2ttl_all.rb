@@ -2,6 +2,7 @@
 
 require 'json'
 require 'fileutils'
+require 'parallel'
 
 input_dir = "refseq/current/refseq.gb"
 output_dir = "refseq/current/refseq.ttl"
@@ -15,7 +16,7 @@ refseq_list = open("#{refseq_json}") do |io|
   JSON.load(io)
 end
 
-refseq_list.each do |entry|
+Parallel.each(refseq_list, in_processes: 4) do |entry|
   tax_id = entry['tax_id']
   prj_id = entry['bioproject_id']
   molecule_name = entry['molecule_name']
@@ -33,6 +34,6 @@ refseq_list.each do |entry|
     $stderr.puts ">>> #{output_file}"
     puts "convert file #{seq_id} ..."
     system(%Q[ruby #{refseq2ttl} -d RefSeq -t "#{molecule_name}" #{input_file} > #{output_file}])
-    system(%Q[grep -v '^@prefix' #{output_file} >> #{output_all}])
+#    system(%Q[grep -v '^@prefix' #{output_file} >> #{output_all}])
   end
 end
