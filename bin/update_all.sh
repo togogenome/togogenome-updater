@@ -22,8 +22,6 @@ echo "Start Update All"
 if [ -n "$refseq_ver" ]; then
   echo "Update and load new refseq version"
   . ${prefix}/update_refseq.sh $refseq_ver
-  rake refseq:refseq2fasta
-  rake refseq:refseq2jbrowse
 else
   echo "Load existing refseq version"
   genome_ver=`readlink -f /data/store/rdf/togogenome/genomes/current | awk -F'/' '{print $NF}'`
@@ -32,6 +30,11 @@ else
 fi
 
 wait;
+
+if [ -n "$refseq_ver" ]; then
+  echo "Update fast & jbrowse new refseq version"
+  . ${prefix}/update_fasta_jbrowse.sh $refseq_ver &
+else
 
 rake uniprot:taxon2ttl &
 
