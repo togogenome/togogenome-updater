@@ -9,7 +9,7 @@ SEQ_CHUNK_SIZE = 20000
 
 OUTPUT_DIR = "refseq/current/jbrowse_upd"
 
-ENDPOINT = "http://dev.togogenome.org/sparql"
+ENDPOINT = "http://dev.togogenome.org/sparql-app"
 
 SPARQL = <<"SPARQL"
 DEFINE sql:select-option "order"
@@ -28,7 +28,8 @@ WHERE
 {
   ?refseq_id insdc:sequence_version "{ref}" .
   ?refseq_id insdc:sequence ?seq_id .
-  ?parentUniqueID obo:so_part_of* ?seq_id FILTER ( ?parentUniqueID != ?seq_id ) .
+  ?gene_id ?obo_so_part_of ?seq_id .
+  ?parentUniqueID ?obo_so_part_of ?gene_id .
   ?parentUniqueID rdfs:subClassOf ?parentUniqueID_type FILTER ( ?parentUniqueID_type = %SO% ).
   ?parentUniqueID obo:so_has_part ?uniqueID .
   ?parentUniqueID_type rdfs:label ?parentUniqueID_type_label .
