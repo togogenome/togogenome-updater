@@ -4,6 +4,8 @@
 #require 'zlib'
 require 'open3'
 require 'fileutils'
+require 'systemu'
+require 'json'
 
 class UniProtTaxonomySplitter
 
@@ -51,31 +53,44 @@ TAIL
     return filepath
   end
 
+  def output_entry(rdf_entry, count)
+    begin
+      rdf_entry.slice!("\n</rdf:RDF>") # exclude footer
+      taxid = rdf_entry[/#{@@tx}(\d+)/, 1].to_i
+      taxid_file = taxid2file(taxid)
+      $stderr.puts "#{count}: #{taxid_file}"
+
+      File.open(taxid_file, "a+") do |output_file|
+        output_file.puts rdf_entry
+      end
+    rescue => err
+      @error_file.puts "Failed: #{Time.now} (#{err})"
+      @error_file.puts block.inspect
+    end
+  end
+
   def split_entries
     count = 0
     Dir::glob("#{@input_dir}/*.rdf").each do |file|
       header_flag = true
+      current_entry = ""
+      current_block = []
       File.foreach(file).slice_before(@@rs).each do |block|
         if !header_flag # exclude header
-          begin
+          if !current_entry.start_with?("<?xml") && current_entry != block.first
             count += 1
-            rdf_entry = block.join
-            rdf_entry.slice!("\n</rdf:RDF>") # exclude footer
-            taxid = rdf_entry[/#{@@tx}(\d+)/, 1].to_i
-            taxid_file = taxid2file(taxid)
-            $stderr.puts "#{count}: #{taxid_file}"
-
-            File.open(taxid_file, "a+") do |output_file|
-              output_file.puts rdf_entry
-            end
-
-          rescue => err
-            @error_file.puts "Failed: #{Time.now} (#{err})"
-            @error_file.puts block.inspect
+            output_entry(current_block.join, count)
+            current_block = block
+            current_entry = block.first
+          else
+            current_block.concat(block)
+            current_entry = block.first
           end
         end
-        header_flag = false if header_flag
+        header_flag = false
       end  # File.foreach(file).slice_before(rs) 
+      count += 1
+      output_entry(current_block.join, count)
     end  # Dir::glob.each(file)
   end  # def split_entries
 
