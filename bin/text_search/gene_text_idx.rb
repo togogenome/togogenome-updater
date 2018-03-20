@@ -4,6 +4,7 @@ require 'json'
 require 'erb'
 require 'fileutils'
 require 'tempfile'
+require 'systemu'
 
 ISQL = '/data/store/virtuoso7.1/bin/isql 20711 dba dba'
 ISQL_OPT = 'VERBOSE=OFF BANNER=OFF PROMPT=OFF ECHO=OFF BLOBS=ON ERRORS=stderr'
@@ -24,14 +25,28 @@ def query(query_name, tax_json)
   temp_query_file = "#{BASE_DIR}/sparql/gene/temp_sparql_#{query_name}.rq"
   tax_list.each do |tax|
     File.open("#{temp_query_file}", "w") do |f|
+      f.puts "set result_timeout = 18000000;"
       f.puts ERB.new(File.read("#{BASE_DIR}/sparql/gene/#{query_name}.rq.erb")).result(binding)
     end
-    
+
     FileUtils.mkdir_p("#{PREPARE_DIR}/text/#{query_name}")
     tax_id = tax.split("/").last
     output_file = "#{PREPARE_DIR}/text/#{query_name}/#{tax_id}.txt"
 
-    system(%Q[#{ISQL} #{ISQL_OPT} < #{temp_query_file} > #{output_file}])
+    # prevent freeze with no reply isql
+    max_attempts = 3 #retry count
+    num_attempts = 0
+    begin
+      num_attempts += 1
+      sql_command = %Q[#{ISQL} #{ISQL_OPT} < #{temp_query_file} > #{output_file}]
+      status, stdout, stderr = systemu sql_command
+      raise if stderr.include?("Error") # maybe timeout
+    rescue
+      if num_attempts <= max_attempts
+        sleep 3
+        retry
+      end
+    end
   end
   FileUtils.rm("#{temp_query_file}") 
   STDERR.puts "End: query [#{query_name}]"
