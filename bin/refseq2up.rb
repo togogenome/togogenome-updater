@@ -28,7 +28,7 @@ refseq_json = ARGV.shift
 output_ttl = ARGV.shift
 #output_tsv =  output_ttl.sub('.ttl', '.tsv')
 idmapping_file = ARGV.shift
-$tax_check_file = "uniprot/current/refseq.tax.json"
+$tax_check_file = File.expand_path('../refseq.tax.json', output_ttl)
 
 @refseq_list = open("#{refseq_json}") do |io|
   JSON.load(io)

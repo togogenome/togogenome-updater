@@ -5,15 +5,14 @@ require 'json'
 
 class RDF2Turtle
 
-  def initialize(input_dir, output_dir)
+  def initialize(tax_json_file, input_dir, output_dir)
     unless File.directory?(output_dir)
       FileUtils.mkdir_p(output_dir)
     end
     @error_file = File.open("#{output_dir}/error.txt", "a+")
     @missing_file = File.open("#{output_dir}/refseq_missing.txt", "a+")
 
-    json_file = 'uniprot/current/refseq.tax.json'
-    json = JSON.parse(File.read(json_file))
+    json = JSON.parse(File.read(tax_json_file))
     taxids = (json["list_taxid"] + json["list_taxup"]).sort.uniq.map {|x| x.to_i}
     
     taxids.sort.each do |taxid|
@@ -40,7 +39,8 @@ class RDF2Turtle
   end
 end
 
+tax_json_file = ARGV.shift || 'uniprot/current/refseq.tax.json'
 input_dir = ARGV.shift || '../uniprot/current/uniprot_taxon.rdf'
 output_dir = ARGV.shift || 'uniprot/current/refseq'
 
-RDF2Turtle.new(input_dir, output_dir)
+RDF2Turtle.new(tax_json_file, input_dir, output_dir)

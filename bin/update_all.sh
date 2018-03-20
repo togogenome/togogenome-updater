@@ -34,7 +34,7 @@ wait;
 if [ -n "$refseq_ver" ]; then
   echo "Update fast & jbrowse new refseq version"
   . ${prefix}/update_fasta_jbrowse.sh $refseq_ver &
-else
+fi
 
 rake uniprot:taxon2ttl &
 
