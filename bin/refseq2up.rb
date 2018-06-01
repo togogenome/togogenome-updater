@@ -26,7 +26,6 @@ end
 @sparql_ep = SPARQL.new(ARGV.shift)
 refseq_json = ARGV.shift
 output_ttl = ARGV.shift
-#output_tsv =  output_ttl.sub('.ttl', '.tsv')
 idmapping_file = ARGV.shift
 $tax_check_file = File.expand_path('../refseq.tax.json', output_ttl)
 

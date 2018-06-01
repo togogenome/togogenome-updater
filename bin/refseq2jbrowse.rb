@@ -13,37 +13,61 @@ ENDPOINT = "http://dev.togogenome.org/sparql-app"
 
 SPARQL = <<"SPARQL"
 DEFINE sql:select-option "order"
+
 PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
 PREFIX obo:    <http://purl.obolibrary.org/obo/>
+PREFIX sio:    <http://semanticscience.org/resource/>
 PREFIX faldo:  <http://biohackathon.org/resource/faldo#>
-PREFIX insdc:   <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
+PREFIX insdc:  <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
 
-SELECT DISTINCT ?start ?end ?strand ?type ?name ?description ?uniqueID ?parentUniqueID
+SELECT DISTINCT ?gene_id ?gene_type ?gene_start ?gene_end ?feat_id ?feat_type ?feat_start ?feat_end ?exon_id ?exon_type ?exon_start ?exon_end ?strand ?gene_name ?gene_description ?feat_name ?feat_description
 FROM <http://togogenome.org/graph/refseq>
 FROM <http://togogenome.org/graph/so>
 FROM <http://togogenome.org/graph/faldo>
-WHERE
-{
+WHERE {
   ?refseq_id insdc:sequence_version "{ref}" .
   ?refseq_id insdc:sequence ?seq_id .
-  ?parentUniqueID obo:so_part_of* ?seq_id FILTER ( ?parentUniqueID != ?seq_id ) .
-  ?parentUniqueID rdfs:subClassOf ?parentUniqueID_type FILTER ( ?parentUniqueID_type = %SO% ).
-  ?parentUniqueID obo:so_has_part ?uniqueID .
-  ?parentUniqueID_type rdfs:label ?parentUniqueID_type_label .
-  BIND ( str(?parentUniqueID_type_label) as ?type ) .
-  ?uniqueID rdfs:subClassOf ?uniqueID_type FILTER ( ?uniqueID_type IN( obo:SO_0000147 ) ).
-  ?uniqueID faldo:location ?loc .
-  ?loc faldo:begin/faldo:position ?pos_start .
-  ?loc faldo:end/faldo:position ?pos_end .
-  ?loc faldo:begin/rdf:type ?faldo_type FILTER ( ?faldo_type IN (faldo:ForwardStrandPosition, faldo:ReverseStrandPosition, faldo:BothStrandsPosition) ).
-  BIND ( IF (?faldo_type = faldo:ForwardStrandPosition, 1, if(?faldo_type= faldo:ReverseStrandPosition, -1, 0)) as ?strand ) .
-  BIND ( IF (?faldo_type = faldo:ReverseStrandPosition, ?pos_end, ?pos_start ) AS ?start ).
-  BIND ( IF (!(?faldo_type = faldo:ReverseStrandPosition), ?pos_end , ?pos_start) AS ?end ).
-  FILTER ( !(?start > {end} || ?end < {start}) )
-  OPTIONAL { ?parentUniqueID rdfs:label ?name . }
-  OPTIONAL { ?parentUniqueID insdc:product ?description . }
+  ?gene_id obo:so_part_of ?seq_id .
+  ?gene_id rdfs:subClassOf obo:SO_0000704 .
+  BIND ("gene" AS ?gene_type)
+  ?gene_id faldo:location ?gene_loc .
+  ?gene_loc faldo:begin/faldo:position ?gene_start_pos .
+  ?gene_loc faldo:end/faldo:position ?gene_end_pos .
+  ?gene_loc faldo:begin/rdf:type ?faldo_type .
+  FILTER (?faldo_type IN (faldo:ForwardStrandPosition, faldo:ReverseStrandPosition, faldo:BothStrandsPosition))
+  BIND (IF (?faldo_type = faldo:ForwardStrandPosition, 1, IF (?faldo_type = faldo:ReverseStrandPosition, -1, 0)) AS ?strand)
+  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?gene_end_pos, ?gene_start_pos) AS ?gene_start)
+  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?gene_end_pos, ?gene_start_pos) AS ?gene_end)
+  FILTER (!(?gene_start > {end} || ?gene_end < {start}))
+  ?feat_id obo:so_part_of ?gene_id .
+  ?feat_id rdfs:subClassOf %SO% .
+  BIND ("mRNA" AS ?feat_type)
+  ?feat_id faldo:location ?feat_loc .
+  ?feat_loc faldo:begin/faldo:position ?feat_start_pos .
+  ?feat_loc faldo:end/faldo:position ?feat_end_pos .
+  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?feat_end_pos, ?feat_start_pos) AS ?feat_start)
+  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?feat_end_pos, ?feat_start_pos) AS ?feat_end)
+  ?feat_id obo:so_has_part ?exon_uri .
+  ?feat_id sio:SIO_000974 ?uuid .
+  ?uuid sio:SIO_000628 ?exon_uri .
+  ?exon_uri rdfs:subClassOf obo:SO_0000147 .
+  BIND (IRI(CONCAT(STR(?exon_uri), "-", STR(?uuid))) AS ?exon_id)
+  BIND ("CDS" AS ?exon_type)
+  ?exon_uri faldo:location ?exon_loc .
+  ?exon_loc faldo:begin/faldo:position ?exon_start_pos .
+  ?exon_loc faldo:end/faldo:position ?exon_end_pos .
+  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?exon_end_pos, ?exon_start_pos) AS ?exon_start)
+  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?exon_end_pos, ?exon_start_pos) AS ?exon_end)
+  OPTIONAL { ?gene_id rdfs:label ?gene_name . }
+  OPTIONAL { ?gene_id insdc:product ?gene_product . }
+  OPTIONAL { ?gene_id insdc:note ?gene_note . }
+  BIND (COALESCE(?gene_product, ?gene_note, "") AS ?gene_description)
+  OPTIONAL { ?feat_id rdfs:label ?feat_name . }
+  OPTIONAL { ?feat_id insdc:product ?feat_product . }
+  OPTIONAL { ?feat_id insdc:note ?feat_note . }
+  BIND (COALESCE(?feat_product, ?feat_note, "") AS ?feat_description)
 }
 SPARQL
 
@@ -66,6 +90,7 @@ obo:SO_0000147 exon
 
 TRACK_LIST = <<"TRACK_LIST"
 {
+  "defaultLocation": "1..50000",
   "tracks" : [
     {
       "label" : "DNA",
@@ -80,27 +105,30 @@ TRACK_LIST = <<"TRACK_LIST"
     {
       "label": "cds",
       "key": "CDS",
-      "storeClass": "JBrowse/Store/SeqFeature/SPARQL",
-      "type": "CanvasFeatures",
-      "style": { "className": "transcript", "color": "#8bba30" },
+      "storeClass": "JBrowse/Store/SeqFeature/TogoGenomeSPARQL",
+      "type": "JBrowse/View/Track/CanvasFeatures",
+      "glyph": "JBrowse/View/FeatureGlyph/Gene",
+      "style": { "color": "#8bba30" },
       "urlTemplate": "#{ENDPOINT}",
       "queryTemplate": #{SPARQL.sub('%SO%', 'obo:SO_0000316').inspect}
     },
     {
       "label": "trna",
       "key": "tRNA",
-      "storeClass": "JBrowse/Store/SeqFeature/SPARQL",
-      "type": "CanvasFeatures",
-      "style": { "className": "transcript", "color": "#ef6391" },
+      "storeClass": "JBrowse/Store/SeqFeature/TogoGenomeSPARQL",
+      "type": "JBrowse/View/Track/CanvasFeatures",
+      "glyph": "JBrowse/View/FeatureGlyph/Gene",
+      "style": { "color": "#ef6391" },
       "urlTemplate": "#{ENDPOINT}",
       "queryTemplate": #{SPARQL.sub('%SO%', 'obo:SO_0000253').inspect}
     },
     {
       "label": "rrna",
       "key": "rRNA",
-      "storeClass": "JBrowse/Store/SeqFeature/SPARQL",
-      "type": "CanvasFeatures",
-      "style": { "className": "transcript", "color": "#e69023" },
+      "storeClass": "JBrowse/Store/SeqFeature/TogoGenomeSPARQL",
+      "type": "JBrowse/View/Track/CanvasFeatures",
+      "glyph": "JBrowse/View/FeatureGlyph/Gene",
+      "style": { "color": "#e69023" },
       "urlTemplate": "#{ENDPOINT}",
       "queryTemplate": #{SPARQL.sub('%SO%', 'obo:SO_0000252').inspect}
     }
