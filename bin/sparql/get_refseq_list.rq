@@ -20,5 +20,6 @@ FROM <http://togogenome.org/graph/assembly_report>
   (CONTAINS(?level, "Chromosome") OR ?level = "Complete Genome")
    AND !((?tax_id ="9606") AND !(?bioproject_accession = "PRJNA168"))
    AND regex(?seq_id, "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{2,4}\\d+))(\\.\\d+)?$")
+   AND ?refseq_category IN ("representative genome", "reference genome")
  )
 } ORDER BY ?tax_id ?bioproject_accession ?replicon_type ?seq_id
