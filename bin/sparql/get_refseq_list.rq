@@ -3,6 +3,7 @@ PREFIX asm: <http://ddbj.nig.ac.jp/ontologies/assembly/>
 SELECT DISTINCT ?assembly_accession ?tax_id ?bioproject_accession ?refseq_category ?release_date ?replicon_type ?seq_id
 FROM <http://togogenome.org/graph/assembly_report>
 {
+ VALUES ?additional_taxid { "103690" "2336" "243276" "267377" "768679"}
  ?assembly asm:assembly_id ?assembly_accession ;
   rdf:type <http://identifiers.org/refseq> ;
   asm:tax_id  ?tax_id ;
@@ -20,6 +21,6 @@ FROM <http://togogenome.org/graph/assembly_report>
   (CONTAINS(?level, "Chromosome") OR ?level = "Complete Genome")
    AND !((?tax_id ="9606") AND !(?bioproject_accession = "PRJNA168"))
    AND regex(?seq_id, "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{2,4}\\d+))(\\.\\d+)?$")
-   AND ?refseq_category IN ("representative genome", "reference genome")
+   AND (?refseq_category IN ("representative genome", "reference genome") OR ?tax_id = ?additional_taxid)
  )
 } ORDER BY ?tax_id ?bioproject_accession ?replicon_type ?seq_id
