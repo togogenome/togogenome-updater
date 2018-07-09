@@ -1,6 +1,11 @@
+PREFIX ddbj-tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
 SELECT DISTINCT ?tax_id
-FROM <http://togogenome.org/graph/tgtax>
 WHERE
 {
-  ?tax_id rdfs:subClassOf ?parent_tax_id .
+  GRAPH <http://togogenome.org/graph/tgtax> {
+    ?tax_id rdfs:subClassOf ?parent_tax_id .
+  }
+  GRAPH <http://togogenome.org/graph/taxonomy> {
+    ?tax_id a ddbj-tax:Taxon .
+  }
 }
