@@ -168,7 +168,7 @@ class WGET_REFSEQ
             puts "try wget http://togows.dbcls.jp/entry/nucleotide/#{seq_id} ..."
             system("wget http://togows.dbcls.jp/entry/nucleotide/#{seq_id}") unless $DEBUG
             if (File.exist?("#{seq_id}")) then # wget success
-              error_line_num = %Q[grep "DOCTYPE html" #{seq_id} | wc -l] # if wget finished with 500, will appear line "<!DOCTYPE html PUBLIC"
+              error_line_num = %Q[grep -e "DOCTYPE html" -e "Timeout" #{seq_id} | wc -l] # if wget finished with 500, will appear line "<!DOCTYPE html PUBLIC"
               status, stdout, stderr = systemu error_line_num
               if stdout.to_i > 0 # wget error in the middle
                 puts "failed (in the middle) wget http://togows.dbcls.jp/entry/nucleotide/#{seq_id}"

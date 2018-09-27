@@ -658,7 +658,7 @@ namespace :uniprot do
   
   desc "Convert UniProt taxon RDF to Turtle"
   task :taxon2ttl do
-    sh "#{RDF_DIR}/uniprot/bin/uniprot_rdf2ttl.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf #{RDF_DIR}/uniprot/current/uniprot_taxon.ttl"
+    sh "#{RDF_DIR}/uniprot/bin/uniprot_rdf2ttl.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf #{RDF_DIR}/uniprot/current/uniprot_taxon.ttl &>> #{RDF_DIR}/uniprot/current/rapper_ttl.log"
   end
 
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
@@ -680,7 +680,7 @@ namespace :uniprot do
 
   desc "Copy UniProt subset(mapped to RefSeq) for TogoGenome"
   task :copy do
-    sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
+    sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/togogenome/uniprot/current/refseq.tax.json #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
   end
   
   desc "Load UniProt to TogoGenome"
