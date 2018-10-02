@@ -1,0 +1,29 @@
+SPARQL
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX mpo:  <http://purl.jp/bio/01/mpo#>
+PREFIX taxonomy:  <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+SELECT
+  ?mpo_id ("^@" AS ?delimit1)
+  (GROUP_CONCAT(DISTINCT ?title; separator="|||") AS ?organism_names) ("^@" AS ?delimit2)
+  (GROUP_CONCAT(DISTINCT ?pheno; separator="|||") AS ?phenotype_names) ("^@" AS ?delimit3)
+  (GROUP_CONCAT(DISTINCT ?genus; separator="|||") AS ?genus)
+FROM <http://togogenome.org/graph/taxonomy>
+FROM <http://togogenome.org/graph/gold>
+FROM <http://togogenome.org/graph/mpo>
+WHERE {
+  VALUES ?mpo_id { <<%= mpo %>> }
+  ?list rdfs:subClassOf* ?mpo_id .
+  ?subject ?pre ?list .
+  OPTIONAL {
+    ?subject rdfs:subClassOf* ?list2 .
+    ?list2 taxonomy:rank taxonomy:Genus .
+    ?list2 rdfs:label ?genus .
+  }
+  OPTIONAL { ?subject rdfs:label ?title } .
+  OPTIONAL { ?list rdfs:label ?pheno . FILTER( LANG(?pheno) != "ja" )}
+  BIND('http://identifiers.org/taxonomy/' AS ?identifer) .
+  BIND( REPLACE(STR(?subject), ?identifer, '') AS ?taxonomy_id ) .
+  FILTER( CONTAINS(STR(?subject),?identifer) )
+} GROUP BY ?mpo_id
+;

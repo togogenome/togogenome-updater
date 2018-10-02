@@ -26,6 +26,7 @@ ${text_bin_prefix}/prepare.rb
 #create index data
 echo "create index data"
 ${text_bin_prefix}/environment_text_idx.rb
+${text_bin_prefix}/phenotype_text_idx.rb
 ${text_bin_prefix}/organism_text_idx.rb
 ${text_bin_prefix}/gene_text_idx.rb
 

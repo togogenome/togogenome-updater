@@ -1,0 +1,26 @@
+SPARQL
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX mpo:  <http://purl.jp/bio/01/mpo#>
+
+SELECT
+  ?mpo_id ("^@" AS ?delimit1)
+  (GROUP_CONCAT(DISTINCT ?label; separator="|||") AS ?label) ("^@" AS ?delimit2)
+  (GROUP_CONCAT(DISTINCT ?definition; separator="|||") AS ?definition) ("^@" AS ?delimit3)
+  (GROUP_CONCAT(DISTINCT ?altlabel; separator="|||") AS ?altlabel)
+FROM <http://togogenome.org/graph/mpo>
+WHERE {
+  VALUES ?mpo_id { <<%= mpo %>> }
+  ?mpo_id rdfs:label ?label .
+  ?mpo_id rdfs:subClassOf* mpo:MPO_01000 .
+  OPTIONAL {
+    ?mpo_id skos:definition ?definition .
+    FILTER(LANG(?definition) != "ja")
+  }
+  OPTIONAL {
+    ?mpo_id skos:altLabel ?altlabel .
+    FILTER(LANG(?altlabel) != "ja")
+  }
+  FILTER(LANG(?label) != "ja")
+} GROUP BY ?mpo_id
+;

@@ -1,0 +1,58 @@
+{
+  "stanzas": [
+    {
+      "stanza_name" : "microbial_phenotype_cell_shape",
+      "queries" : [
+        {
+          "query_name" : "microbial_phenotype_cell_shape",
+          "columns" : [
+            {
+               "column_name" : "mpo_id",
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "label",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "definition",
+               "column_number" : 2
+            },
+            {
+               "column_name" : "altlabel",
+               "column_number" : 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stanza_name" : "microbial_phenotype_information",
+      "queries" : [
+        {
+          "query_name" : "microbial_phenotype_information",
+          "columns" : [
+            {
+               "column_name" : "mpo_id",
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "organism_name",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "phenotype_names",
+               "column_number" : 2
+            },
+            {
+               "column_name" : "genus",
+               "column_number" : 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
