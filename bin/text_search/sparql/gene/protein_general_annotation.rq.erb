@@ -1,0 +1,39 @@
+SPARQL
+PREFIX up: <http://purl.uniprot.org/core/>
+PREFIX faldo: <http://biohackathon.org/resource/faldo#>
+
+SELECT ?togo_gene ("^@" AS ?delimit1)
+  GROUP_CONCAT(DISTINCT ?protein; separator = "|||") AS ?protein_ids  ("^@" AS ?delimit2)
+  GROUP_CONCAT(DISTINCT ?name; separator = "|||") AS ?names ("^@" AS ?delimit3)
+  GROUP_CONCAT(DISTINCT ?message; separator = "|||") AS ?messages
+WHERE {
+  GRAPH <http://togogenome.org/graph/tgup>
+  {
+    ?togo_gene rdfs:seeAlso <<%= tax %>> .
+  }
+  GRAPH <http://togogenome.org/graph/text_search/protein_gene> {
+    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
+    ?protein <http://togogenome/uptg_mapping> ?togo_gene
+  }
+  GRAPH <http://togogenome.org/graph/uniprot> {
+    ?protein  up:annotation ?annotation .
+    {
+      ?annotation a up:Annotation .
+      BIND(STR('Miscellaneous') AS ?name) .
+      ?annotation rdfs:comment ?message .
+    }UNION{
+      ?annotation a up:Subcellular_Location_Annotation .
+      up:Subcellular_Location_Annotation rdfs:label ?name .
+      ?annotation up:locatedIn ?located_in .
+      ?located_in up:cellularComponent ?location .
+      ?location up:alias ?message .
+    }UNION{
+      ?annotation a ?type .
+      ?type rdfs:subClassOf up:Annotation .
+      FILTER (?type != up:Subcellular_Location_Annotation)
+      ?type rdfs:label ?name .
+      ?annotation rdfs:comment ?message .
+    }
+  }
+} GROUP BY ?togo_gene
+;

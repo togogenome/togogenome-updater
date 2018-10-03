@@ -233,6 +233,33 @@
           ]
         }
       ]
+    },
+    {
+      "stanza_name" : "protein_general_annotation",
+      "queries" : [
+        {
+          "query_name" : "protein_general_annotation",
+          "columns" : [
+            {
+               "column_name" : "gene_id",
+               "column_number" : 0,
+               "is_identify" : true
+            },
+            {
+               "column_name" : "uniprot_id",
+               "column_number" : 1
+            },
+            {
+               "column_name" : "names",
+               "column_number" : 2
+            },
+            {
+               "column_name" : "messages",
+               "column_number" : 3
+            }
+          ]
+        }
+      ]
     }
   ]
 }
