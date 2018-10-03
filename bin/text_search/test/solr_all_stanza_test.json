@@ -58,5 +58,13 @@
   {
    "stanza_name": "protein_sequence_annotation",
    "q" : "carboxylate"
+  },
+  {
+   "stanza_name": "microbial_phenotype_cell_shape",
+   "q" : "Coccus"
+  },
+  {
+   "stanza_name": "microbial_phenotype_information",
+   "q" : "Archaeoglobus"
   }
 ]
