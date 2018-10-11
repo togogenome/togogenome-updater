@@ -175,6 +175,7 @@ class WGET_REFSEQ
                 # file remove and clear cache, then this file will be retried.
                 FileUtils.rm("#{@output_dir}/#{tax_id}/#{prj_id}/#{seq_id}")
                 system("curl \"http://togows.dbcls.jp/entry/nucleotide/#{seq_id}?clear\"")
+                system("wget http://togows.dbcls.jp/entry/nucleotide/#{seq_id}") unless $DEBUG
               else
                 puts "succeed wget http://togows.dbcls.jp/entry/nucleotide/#{seq_id}"
                 cnt += 1
