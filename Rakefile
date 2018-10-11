@@ -652,10 +652,13 @@ namespace :uniprot do
 
   desc "Split UniProt RDF into taxon files"
   task :rdf2taxon do
-    sh "#{RDF_DIR}/uniprot/bin/uniprot_taxon.rb #{RDF_DIR}/uniprot/current/uniprot_unzip/uniprotkb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf"
+    sh "#{RDF_DIR}/uniprot/bin/uniprot_taxon.rb #{RDF_DIR}/uniprot/current/uniprot_unzip/uniprotkb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf &>> #{RDF_DIR}/u    niprot/current/rdf2taxon.log"
+  end
+
+  task :remove_unzip do
     sh "rm -rf #{RDF_DIR}/uniprot/current/uniprot_unzip/uniprotkb"
   end
-  
+
   desc "Convert UniProt taxon RDF to Turtle"
   task :taxon2ttl do
     sh "#{RDF_DIR}/uniprot/bin/uniprot_rdf2ttl.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf #{RDF_DIR}/uniprot/current/uniprot_taxon.ttl &>> #{RDF_DIR}/uniprot/current/rapper_ttl.log"
