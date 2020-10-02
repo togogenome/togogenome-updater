@@ -7,6 +7,7 @@ rake ontology:taxonomy:fetch
 rake ontology:insdc:fetch
 rake ontology:obo_go:fetch
 echo "End: Fetch ontologies"
+echo `date "+%Y-%m-%d %H:%M:%S"`" End: Fetch ontologies" > "update.log"
 
 ### Load ontologies
 echo "Start: Load ontologies"
@@ -16,16 +17,20 @@ rake ontology:insdc:load 20170713
 rake ontology:obo_go:load 20170713
 rake ontology:obo_so:load 20170713
 rake ontology:meo:load 0.7
+rake ontology:meo_dag:load 0.9
 rake ontology:mpo:load 0.7
 rake ontology:gmo:load 0.11b
-rake ontology:mccv:load 0.94
+rake ontology:mccv:load 0.99
 rake ontology:pdo:load 0.11
 rake ontology:pdo:load_lod 20160609
 rake ontology:csso:load 0.2
 rake ontology:gazetteer:load 20130906
 rake ontology:brc:load 20160609
+rake ontology:nbrc:load 20200229
+rake ontology:jcm:load 20200229
 rake ontology:gold:load 20150118
 echo "End: Load ontologies"
+echo `date "+%Y-%m-%d %H:%M:%S"`" End: Load ontologies" >> "update.log"
 
 ### Create and load ontologies for facet search(MEO & MPO)
 echo "Start: Create and load ontologies for facet search"

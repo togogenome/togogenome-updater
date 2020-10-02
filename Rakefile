@@ -77,6 +77,8 @@ rake ontology:pdo:load_lod 20130902     # Load PDO_MAPPING to TogoGenome
 rake ontology:csso:load 0.2             # Load CSSO to TogoGenome
 rake ontology:gazetteer:load 20130906   # Load GAZETTEER to TogoGenome
 rake ontology:brc:load 20130925         # Load BRC to TogoGenome
+rake ontology:nbrc:load 20200229        # Load NBRC to TogoGenome
+rake ontology:jcm:load 20200229         # Load JCM to TogoGenome
 rake ontology:gold:load 20130827        # Load GOLD to TogoGenome
 
 * Update EdgeStore
@@ -414,6 +416,19 @@ namespace :meo do
 end
 
 #
+# MEO(0/9)
+#
+
+namespace :meo_dag do
+  desc "Load MEO0.9 to TogoGenome"
+  task :load do
+    name = set_name
+    load_ttl("#{RDF_DIR}/togogenome/ontology/MEO_0.9/current/meo.ttl", 'meo0.9', name)
+    update_graph('meo0.9', name)
+  end
+end
+
+#
 # MPO
 #
 
@@ -499,6 +514,31 @@ namespace :brc do
   end
 end
 
+#
+# NBRC
+#
+
+namespace :nbrc do
+  desc "Load NBRC to TogoGenome"
+  task :load do
+    name = set_name
+    load_dir("#{RDF_DIR}/togogenome/ontology/nbrc/current", '*.ttl', 'nbrc', name)
+    update_graph('nbrc', name)
+  end
+end
+
+#
+# JCM
+#
+
+namespace :jcm do
+  desc "Load JCM to TogoGenome"
+  task :load do
+    name = set_name
+    load_dir("#{RDF_DIR}/togogenome/ontology/jcm/current", '*.ttl', 'jcm', name)
+    update_graph('jcm', name)
+  end
+end
 #
 # GOLD
 #
