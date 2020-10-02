@@ -48,7 +48,6 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, GlobalStatsEstimationMixi
         if( ! this.queryTemplate ) {
             console.error("No queryTemplate set for SPARQL backend, no data will be displayed");
         }
-
         var thisB = this;
         this._estimateGlobalStats()
             .then(
@@ -80,11 +79,23 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, GlobalStatsEstimationMixi
     },
 
     _getFeatures: function() {
+/*
+        // testing code for limit maximum region length but not needed by introducing limit in GlobalStatsEstimationMixin.js and style->featureScale
+        var query_region = arguments[0];
+        var max_region_length = 1000 * 1000; // 1Mbp
+        if (query_region.end - query_region.start > max_region_length) {
+          var max_region_end = query_region.start + max_region_length  
+          console.error("Requested region " + query_region.ref + ":" + query_region.start + ".." + query_region.end + " too large (shorten to the maximum limit " + max_region_length + "bp " + query_region.ref + ":" + query_region.start + ".." + max_region_end + ")");
+          query_region.end = max_region_end;
+          //console.log(arguments[0]);  // confirmed that the end value has changed
+        }
+*/
         this.getFeatures.apply( this, arguments );
     },
 
     getFeatures: function( query, featCallback, finishCallback, errorCallback ) {
         //console.log(query);
+        //console.log(query.end - query.start);
         if( this.queryTemplate ) {
             var thisB = this;
             xhr.get( this.url+'?'+ioQuery.objectToQuery({
@@ -111,7 +122,7 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, GlobalStatsEstimationMixi
         if( ! rows.length )
             return;
         var fields = results.head.vars;
-        var requiredFields = ['gene_id', 'gene_type', 'gene_start', 'gene_end', 'feat_id', 'feat_type', 'feat_start', 'feat_end', 'exon_id', 'exon_type', 'exon_start', 'exon_end', 'strand'];
+        var requiredFields = ['gene_id', 'gene_type', 'gene_start', 'gene_end', 'feat_id', 'feat_type', 'feat_start', 'feat_end', 'exon_id', 'exon_type', 'exon_start', 'exon_end', 'strand']; // also needs 'feat_class' for coloring gene by SO URI
        for( var i = 0; i < requiredFields.length; i++ ) {
             if( fields.indexOf( requiredFields[i] ) == -1 ) {
                 console.error("Required field "+requiredFields[i]+" missing from feature data");
@@ -160,6 +171,7 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, GlobalStatsEstimationMixi
             e.id = data.exon_id;
             e.data.type = data.exon_type;
             e.data.parent = data.feat_id;
+            e.data.so = data.feat_class;
             e.data.start = parseInt( data.exon_start );
             e.data.end = parseInt( data.exon_end );
             e.data.strand = parseInt( data.strand );
@@ -178,13 +190,15 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, GlobalStatsEstimationMixi
                 if( p ) {
                     p.data.subfeatures.push( f.data );
                     //delete seenFeatures[id];
-                    f.data.seen = true;
+                    f.seen = true;
                 }
             }
         }
 
         for( var id in seenFeatures ) {
-            if(! seenFeatures[id].data.seen ) {
+            //console.log(id)
+            //console.log(seenFeatures[id].seen)
+            if(! seenFeatures[id].seen ) {
                 //console.log("id>> " + id)
                 featCallback( new SimpleFeature( seenFeatures[id] ) );
             }
