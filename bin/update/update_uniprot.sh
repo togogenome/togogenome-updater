@@ -8,7 +8,7 @@ echo "End: Update tgup"
 
 ### Convert (RDF/XML=>Turtle) and load UniProt
 echo "Start: Update UniProt"
-rake uniprot:copy
+rake uniprot:download_rdf
 rake uniprot:load $1
 rake uniprot:uniprot2stats
 rake uniprot:load_stats

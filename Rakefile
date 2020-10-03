@@ -666,6 +666,15 @@ end
 
 namespace :uniprot do
   desc "Retrieve UniProt RDF in ../uniprot/current"
+  task :fetch_idmapping do
+    name = set_name
+    path = create_subdir('uniprot', name)
+    link_current('uniprot', name)
+    sh "cd #{path}; #{HTTP_GET} ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz"
+    sh "mkdir -p #{path}/uniprot_unzip"
+    sh "gunzip #{path}/idmapping.dat.gz"
+  end
+
   task :fetch do
     name = set_name
     path = create_subdir("#{RDF_DIR}/uniprot", name)
@@ -675,7 +684,7 @@ namespace :uniprot do
     create_subdir('uniprot', name)
     link_current('uniprot', name)
   end
-  
+
   task :unzip do
     path = "#{RDF_DIR}/uniprot/current"
     sh "mkdir -p #{path}/uniprot_unzip"
@@ -707,11 +716,8 @@ namespace :uniprot do
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
   task :refseq2up do
     # Generate refseq.up.ttl
-    name = set_name
-    path = create_subdir('uniprot', name)
-    link_current('uniprot', name)
-    sh "grep 'RefSeq\\|NCBI_TaxID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat"
-    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat 2> #{path}/refseq.up.log"
+    sh "grep 'RefSeq\\|NCBI_TaxID' #{RDF_DIR}/togogenome/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{RDF_DIR}/togogenome/uniprot/current/uniprot_unzip/filterd_idmapping.dat"
+    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{RDF_DIR}/togogenome/uniprot/current/uniprot_unzip/filterd_idmapping.dat 2> #{path}/refseq.up.log"
   end
 
   desc "Load TogoGenome to UniProt mappings"
@@ -719,6 +725,11 @@ namespace :uniprot do
     name = set_name
     load_ttl("#{RDF_DIR}/togogenome/uniprot/current/refseq.up.ttl", 'tgup', name)
     update_graph('tgup', name)
+  end
+
+  desc "Download UniProt rdf (by tax_ids) for TogoGenome"
+  task :download_rdf do
+    sh "bin/get_uniprot_rdf.rb #{RDF_DIR}/togogenome/uniprot/current/refseq.tax.json  #{RDF_DIR}/togogenome/uniprot/current/refseq"
   end
 
   desc "Copy UniProt subset(mapped to RefSeq) for TogoGenome"
