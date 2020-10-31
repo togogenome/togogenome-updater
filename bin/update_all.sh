@@ -16,6 +16,7 @@ refseq_ver=$2
 echo "Start Update All"
 
 . ${prefix}/update_ontology.sh
+. ${prefix}/fetch_uniprot.sh $uniprot_ver &
 
 # When there was no update the refseq data(refseq_ver has not been specified), will just load from current data.
 if [ -n "$refseq_ver" ]; then
@@ -25,15 +26,17 @@ else
   echo "Load existing refseq version"
   genome_ver=`readlink -f /data/store/rdf/togogenome/genomes/current | awk -F'/' '{print $NF}'`
   refseq_ver=`readlink -f /data/store/rdf/togogenome/refseq/current | awk -F'/' '{print $NF}' | sed -e s/release//`
-  . ${prefix}/load_refseq.sh $genomes_ver $refseq_ver
+  . ${prefix}/load_refseq.sh $genomes_ver $refseq_ver &
 fi
+
+wait;
 
 if [ -n "$refseq_ver" ]; then
   echo "Update fast & jbrowse new refseq version"
   . ${prefix}/update_fasta_jbrowse.sh $refseq_ver
 fi
 
-. ${prefix}/fetch_uniprot_idmapping.sh $uniprot_ver
+
 . ${prefix}/update_uniprot.sh $uniprot_ver
 . ${prefix}/update_facet.sh
 . ${prefix}/update_edgestore.sh
