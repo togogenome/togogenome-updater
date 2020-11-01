@@ -19,6 +19,7 @@ class RDF2Turtle
     Dir.glob("#{input_dir}/*.rdf") do |input_path|
       next if input_path.end_with?("11676.rdf")  # HIV-1 (too huge)
       output_path = input_path.sub(input_dir, output_dir).sub(".rdf", ".ttl")
+      next if File.exist?(output_path)
       command = "rapper -I http://purl.uniprot.org/ -i rdfxml -o turtle #{input_path} > #{output_path}"
       begin
         if File.exists?(output_path)
