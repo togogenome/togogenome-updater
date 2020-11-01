@@ -700,7 +700,8 @@ namespace :uniprot do
 
   desc "Convert UniProt taxon RDF to Turtle"
   task :taxon2ttl do
-    sh "#{RDF_DIR}/uniprot/bin/uniprot_rdf2ttl.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf #{RDF_DIR}/uniprot/current/uniprot_taxon.ttl &>> #{RDF_DIR}/uniprot/current/rapper_ttl.log"
+    path = "#{RDF_DIR}/togogenome/uniprot/current"
+    sh "#{RDF_DIR}/togogenome/bin/uniprot_rdf2ttl.rb #{path}/refseq #{path}/refseq_ttl &>> #{path}/rapper_ttl.log"
   end
 
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
@@ -769,7 +770,7 @@ namespace :edgestore do
     sh "rm -f #{path}/togogenome2uniprot.ttl"
     link_current("#{RDF_DIR}/edgestore", name)
   end
-  
+
   desc "Load EdgeStore to TogoGenome"
   task :load do
     name = set_name

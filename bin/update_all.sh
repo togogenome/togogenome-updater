@@ -43,4 +43,6 @@ fi
 
 . ${prefix}/update_text_search.sh
 
+rake uniprot:taxon2ttl
+
 echo "End Update All"
