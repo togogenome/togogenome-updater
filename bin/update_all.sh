@@ -43,6 +43,8 @@ fi
 
 . ${prefix}/update_text_search.sh
 
+ruby /data/store/rdf/togogenome/bin/check_update.rb $1
+
 rake uniprot:taxon2ttl
 
 echo "End Update All"
