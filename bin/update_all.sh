@@ -3,7 +3,7 @@
 # usage
 # ./update_all.sh 2015_11    #only update uniprot
 # ./update_all.sh 2015_11 73 #update uniprot and refseq
- 
+
 prefix="/data/store/rdf/togogenome/bin/update"
 
 if [ $# -lt 1 ]; then
@@ -15,7 +15,7 @@ refseq_ver=$2
 
 echo "Start Update All"
 
-. ${prefix}/update_ontology.sh 
+. ${prefix}/update_ontology.sh
 . ${prefix}/fetch_uniprot.sh $uniprot_ver &
 
 # When there was no update the refseq data(refseq_ver has not been specified), will just load from current data.
@@ -36,13 +36,15 @@ if [ -n "$refseq_ver" ]; then
   . ${prefix}/update_fasta_jbrowse.sh $refseq_ver
 fi
 
-rake uniprot:remove_unzip
-rake uniprot:taxon2ttl &
 
 . ${prefix}/update_uniprot.sh $uniprot_ver
 . ${prefix}/update_facet.sh
 . ${prefix}/update_edgestore.sh
 
 . ${prefix}/update_text_search.sh
+
+ruby /data/store/rdf/togogenome/bin/check_update.rb $1
+
+rake uniprot:taxon2ttl
 
 echo "End Update All"

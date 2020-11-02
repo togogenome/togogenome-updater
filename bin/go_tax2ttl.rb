@@ -20,19 +20,26 @@ class GO_TAX2RDF
   def get_tax_list
     puts 'get_tax_list'
     sparql = File.read("#{@base_dir}/sparql/uptax_tax_list.rq")
-    res = query(sparql)
+    isql_query(sparql, "#{@output_dir}/gotax_list.txt")
+    gotax_list = []
+    File.open("#{@output_dir}/gotax_list.txt") do |f|
+      f.each_line do |line|
+        gotax_list.push(line.chomp.strip)
+      end
+    end
+    puts 'end get_tax_list'
+    gotax_list
   end
 
 # desc 'go_tax_list', 'GO毎のUniprotIDを取得し、tripleの形式で出力する'
   def go_tax_list(tax_list)
     exec_cnt =0
-    tax_list.each do |tax|
-      tax_uri = tax['tax_id']['value']
+    tax_list.each do |tax_uri|
       FileUtils.mkdir_p @output_dir
 
       file_path = "#{@output_dir}/go_#{tax_uri.split('/').last}.ttl"
       File.delete(file_path) if File.exist?(file_path)
-      
+
       template = File.read("#{@base_dir}/sparql/create_ttl_go_tax.rq.erb")
       sparql   = ERB.new(template).result(binding)
       ttl = isql_query(sparql)
@@ -43,7 +50,7 @@ class GO_TAX2RDF
   end
 
   private
-  
+
   def isql_query(sparql, output_path = nil)
     sparql_path = Tempfile.open('sparql_file') {|fp|
       fp.puts "SPARQL"

@@ -416,7 +416,7 @@ namespace :meo do
 end
 
 #
-# MEO(0/9)
+# MEO(0.9)
 #
 
 namespace :meo_dag do
@@ -539,6 +539,7 @@ namespace :jcm do
     update_graph('jcm', name)
   end
 end
+
 #
 # GOLD
 #
@@ -665,29 +666,27 @@ end
 ###
 
 namespace :uniprot do
+
   desc "Retrieve UniProt RDF in ../uniprot/current"
   task :fetch do
     name = set_name
     path = create_subdir("#{RDF_DIR}/uniprot", name)
     sh "cd #{path}; #{HTTP_GET} ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz"
-    sh "cd #{path}; echo 'mirror rdf' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release"
+    sh "cd #{path}; echo 'mirror -X uniparc_* -X uniprotkb_* -X uniref_* rdf' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release"
     link_current("#{RDF_DIR}/uniprot", name)
     create_subdir('uniprot', name)
     link_current('uniprot', name)
   end
-  
+
   task :unzip do
     path = "#{RDF_DIR}/uniprot/current"
     sh "mkdir -p #{path}/uniprot_unzip"
     sh "cp -p #{path}/rdf/core.owl #{path}/uniprot_unzip"
     sh "cp -p #{path}/rdf/*.owl.xz #{path}/uniprot_unzip"
     sh "cp -p #{path}/rdf/[a-t]*.rdf.xz #{path}/uniprot_unzip"
-    sh "mkdir -p #{path}/uniprot_unzip/uniprotkb"
-    sh "cp -p #{path}/rdf/uniprotkb_*.rdf.xz #{path}/uniprot_unzip/uniprotkb"
     sh "cp -p #{path}/idmapping.dat.gz #{path}/uniprot_unzip"
     sh "gunzip #{path}/uniprot_unzip/*.gz"
     sh "xz -dv #{path}/uniprot_unzip/*.xz"
-    sh "xz -dv #{path}/uniprot_unzip/uniprotkb/*.xz"
   end
 
   desc "Split UniProt RDF into taxon files"
@@ -701,17 +700,16 @@ namespace :uniprot do
 
   desc "Convert UniProt taxon RDF to Turtle"
   task :taxon2ttl do
-    sh "#{RDF_DIR}/uniprot/bin/uniprot_rdf2ttl.rb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf #{RDF_DIR}/uniprot/current/uniprot_taxon.ttl &>> #{RDF_DIR}/uniprot/current/rapper_ttl.log"
+    path = "#{RDF_DIR}/togogenome/uniprot/current"
+    sh "#{RDF_DIR}/togogenome/bin/uniprot_rdf2ttl.rb #{path}/refseq #{path}/refseq_ttl &>> #{path}/rapper_ttl.log"
   end
 
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
   task :refseq2up do
     # Generate refseq.up.ttl
-    name = set_name
-    path = create_subdir('uniprot', name)
-    link_current('uniprot', name)
-    sh "grep 'RefSeq\\|NCBI_TaxID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat"
-    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{RDF_DIR}/uniprot/current/uniprot_unzip/filterd_idmapping.dat 2> #{path}/refseq.up.log"
+    path = "#{RDF_DIR}/togogenome/uniprot/current"
+    sh "grep 'RefSeq\\|NCBI_TaxID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{path}/filterd_idmapping.dat"
+    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{path}/filterd_idmapping.dat 2> #{path}/refseq.up.log"
   end
 
   desc "Load TogoGenome to UniProt mappings"
@@ -721,17 +719,22 @@ namespace :uniprot do
     update_graph('tgup', name)
   end
 
+  desc "Download UniProt rdf (by tax_ids) for TogoGenome"
+  task :download_rdf do
+    sh "bin/get_uniprot_rdf.rb #{RDF_DIR}/togogenome/uniprot/current/refseq.tax.json  #{RDF_DIR}/togogenome/uniprot/current/refseq"
+  end
+
   desc "Copy UniProt subset(mapped to RefSeq) for TogoGenome"
   task :copy do
     sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/togogenome/uniprot/current/refseq.tax.json #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
   end
-  
+
   desc "Load UniProt to TogoGenome"
   task :load do
     name = set_name
     load_dir("#{RDF_DIR}/uniprot/current/uniprot_unzip", '*.owl', 'uniprot', name)
     load_dir("#{RDF_DIR}/uniprot/current/uniprot_unzip", '*.rdf', 'uniprot', name)
-    load_dir_multiple("#{RDF_DIR}/togogenome/uniprot/current/refseq", '*.rdf', 'uniprot', name, 6)
+    load_dir_multiple("#{RDF_DIR}/togogenome/uniprot/current/refseq", '*.rdf.gz', 'uniprot', name, 6)
     update_graph('uniprot', name)
   end
 
@@ -767,7 +770,7 @@ namespace :edgestore do
     sh "rm -f #{path}/togogenome2uniprot.ttl"
     link_current("#{RDF_DIR}/edgestore", name)
   end
-  
+
   desc "Load EdgeStore to TogoGenome"
   task :load do
     name = set_name

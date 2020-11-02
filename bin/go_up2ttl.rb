@@ -20,17 +20,22 @@ class GO_UP2RDF
   def get_upgo_list
     puts 'start get_upgo_list'
     sparql = File.read("#{@base_dir}/sparql/upgo_list.rq")
-    res = query(sparql)
+    isql_query(sparql, "#{@output_dir}/upgo_list.txt")
+    upgo_list = []
+    File.open("#{@output_dir}/upgo_list.txt") do |f|
+      f.each_line do |line|
+        upgo_list.push(line.chomp.strip)
+      end
+    end
     puts 'end get_upgo_list'
-    res
+    upgo_list
   end
 
 # desc 'upgo_up_cnt', 'GO毎のUniprotIDヒット件数取得する'
   def upgo_up_cnt(upgo_list)
     puts 'start upgo_up_cnt'
     exec_cnt =0
-    ret = upgo_list.map do |upgo|
-      upgo_uri = upgo['go']['value']
+    ret = upgo_list.map do |upgo_uri|
       template = File.read("#{@base_dir}/sparql/upgo_cnt.rq.erb")
       sparql   = ERB.new(template).result(binding)
       res = isql_query(sparql)
@@ -53,7 +58,7 @@ class GO_UP2RDF
 
       file_path = "#{@output_dir}/#{upgo_uri.split('/').last}_uniprot.ttl"
       File.delete(file_path) if File.exist?(file_path)
-      
+
       0.step(cnt, limit) do |offset|
         template = File.read("#{@base_dir}/sparql/create_ttl_upgo_upid.rq.erb")
         sparql   = ERB.new(template).result(binding)
@@ -66,7 +71,7 @@ class GO_UP2RDF
   end
 
   private
-  
+
   def isql_query(sparql, output_path = nil)
     sparql_path = Tempfile.open('sparql_file') {|fp|
       fp.puts "SPARQL"
