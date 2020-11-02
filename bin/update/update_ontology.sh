@@ -1,13 +1,12 @@
 #!/bin/sh
 
-### Fetch daily update ontology files 
+### Fetch daily update ontology files
 echo "Start: Fetch ontologies"
 rake ontology:faldo:fetch
 rake ontology:taxonomy:fetch
 rake ontology:insdc:fetch
 rake ontology:obo_go:fetch
 echo "End: Fetch ontologies"
-echo `date "+%Y-%m-%d %H:%M:%S"`" End: Fetch ontologies" > "update.log"
 
 ### Load ontologies
 echo "Start: Load ontologies"
@@ -30,7 +29,6 @@ rake ontology:nbrc:load 20200229
 rake ontology:jcm:load 20200229
 rake ontology:gold:load 20150118
 echo "End: Load ontologies"
-echo `date "+%Y-%m-%d %H:%M:%S"`" End: Load ontologies" >> "update.log"
 
 ### Create and load ontologies for facet search(MEO & MPO)
 echo "Start: Create and load ontologies for facet search"

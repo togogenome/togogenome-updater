@@ -2,7 +2,7 @@ require 'json'
 require 'fileutils'
 
 class TogoGenomeUpdateCheck
-  @@update_log_dir = "/data/store/rdf/togogenome/update_log"
+  @@update_log_dir = "/data/store/rdf/togogenome/logs/update_log"
   def initialize(version)
     @update_ret = {}
     @log_dir = "#{@@update_log_dir}/#{version}"
@@ -64,7 +64,7 @@ class TogoGenomeUpdateCheck
     end
     @update_ret["refseq_wget_failed"] = failed_list
   end
- 
+
   # FASTAファイルのサイズ
   def fasta_file_size
     ret = shell_command("ls -lh /data/store/rdf/togogenome/refseq/current/refseq.fasta | awk '{print $5}'")

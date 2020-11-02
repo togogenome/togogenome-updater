@@ -6,8 +6,9 @@ with_text_db_file="/data/store/virtuoso7.1/var/lib/virtuoso/virtuoso.db.with_tex
 serv="71"
 bin_prefix="/data/store/bin"
 text_bin_prefix="/data/store/rdf/togogenome/bin/text_search"
+log_dir="/data/store/rdf/togogenome/text_search/current/"
 
-# evacuates orginal db file, since several raphs are added for creating the text index data.  
+# evacuates orginal db file, since several raphs are added for creating the text index data.
 echo "evacuates orginal db file"
 echo ">>> Stopping ${serv} ..."
 ${bin_prefix}/${serv}.sh stop
@@ -34,12 +35,12 @@ ${text_bin_prefix}/gene_text_idx.rb
 echo "load index data to solr"
 ${bin_prefix}/solr4_dev.sh stop
 sleep 60;
-${bin_prefix}/solr4_dev.sh clear 
+${bin_prefix}/solr4_dev.sh clear
 ${bin_prefix}/solr4_dev.sh start
 sleep 300;
-${text_bin_prefix}/load_solr.rb >> load_solr.log 2>>load_solr2.log
+${text_bin_prefix}/load_solr.rb >> ${log_dir}/load_solr.log 2>>${log_dir}/load_solr2.log
 
-#gets back orginal db file 
+#gets back orginal db file
 echo "gets back orginal db file"
 echo ">>> Stopping ${serv} ..."
 ${bin_prefix}/${serv}.sh stop
