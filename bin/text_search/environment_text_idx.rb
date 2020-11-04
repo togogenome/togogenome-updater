@@ -37,10 +37,10 @@ end
 #
 # return value example
 # {"@id"=>"http://togogenome.org/environment/MEO_0000368",
-#  "meo_id"=>"MEO_0000368", 
+#  "meo_id"=>"MEO_0000368",
 #  "source_ids"=>["JCM 7370", "JCM 7513"],
 #  "organism_names"=>["Sphingomonas adhaesiva Yabuuchi et al. 1990", "Sphingomonas sp."],
-#  "isolations"=>["Sterile water used before surgery"], 
+#  "isolations"=>["Sterile water used before surgery"],
 #  "meo_labels"=>["sterile water"]}
 def environment_obj_mapping(line, query_name, columns_info)
   return line.start_with?('http://purl.jp/bio/11/meo/') unless
@@ -97,7 +97,7 @@ def get_stanza_column_names (stanza_name)
   columns.uniq
 end
 
-# returns context hash for jsonld 
+# returns context hash for jsonld
 def get_context_hash(stanza_name, column_names)
   base_url = "http://togogenome.org/#{stanza_name}"
 
@@ -123,7 +123,7 @@ def text2hash (stanza_name,query_names)
         meo_id = meo_text_data["meo_id"]
         if result[meo_id] == nil
           result[meo_id] = meo_text_data
-        else 
+        else
           result[meo_id].merge!(meo_text_data) do |key, oldval, newval|
             if key.to_s == 'meo_id' || key.to_s == '@id' # no repeat of meo id
               oldval
@@ -152,7 +152,7 @@ def output_json (stanza_name, result_hash)
   File.open("#{output_file}", 'w') do |file|
     file.puts '{'
     file.puts '"@context" :'
-    file.puts JSON.pretty_generate(get_context_hash(stanza_name, columns)) 
+    file.puts JSON.pretty_generate(get_context_hash(stanza_name, columns))
     file.puts ','
     file.puts '"@graph" :'
     file.puts '['
@@ -163,7 +163,7 @@ def output_json (stanza_name, result_hash)
       if cnt == result_hash.size - 1
         comma = ''
       end
-      
+
       file.puts JSON.pretty_generate(value) + comma
       solr_index_file.puts JSON.pretty_generate(value) + comma
       cnt += 1

@@ -48,7 +48,7 @@ def query(query_name, tax_json)
       end
     end
   end
-  FileUtils.rm("#{temp_query_file}") 
+  FileUtils.rm("#{temp_query_file}")
   STDERR.puts "End: query [#{query_name}]"
   STDERR.puts Time.now.strftime("%Y/%m/%d %H:%M:%S")
 end
@@ -91,7 +91,7 @@ def gene_obj_mapping(line, query_name, columns_info)
           to_utf(entry.strip.strip.gsub('http://purl.uniprot.org/annotation/',''))
         else
           to_utf(entry.strip)
-        end 
+        end
       end
       values[column["column_name"]] = value
     end
@@ -133,7 +133,7 @@ def get_stanza_column_names (stanza_name)
   columns.uniq
 end
 
-# returns context hash for jsonld 
+# returns context hash for jsonld
 def get_context_hash(stanza_name, column_names)
   base_url = "http://togogenome.org/#{stanza_name}"
 

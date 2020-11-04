@@ -30,6 +30,6 @@ WHERE
   }
   OPTIONAL { ?strain_id mccv:MCCV_000033 ?application . }
   OPTIONAL { ?strain_id mccv:MCCV_000024/mccv:MCCV_000026 ?other_link . }
-  FILTER (STRSTARTS(STR(?tax_id), "http://identifiers.org/taxonomy/")) 
+  FILTER (STRSTARTS(STR(?tax_id), "http://identifiers.org/taxonomy/"))
 } GROUP BY ?tax_id
 ;

@@ -3,5 +3,5 @@ FROM <http://togogenome.org/graph/uniprot>
 WHERE
 {
  ?go a <http://www.w3.org/2002/07/owl#Class>
- FILTER (STRSTARTS(STR(?go),"http://purl.obolibrary.org/obo/GO_")) 
+ FILTER (STRSTARTS(STR(?go),"http://purl.obolibrary.org/obo/GO_"))
 }

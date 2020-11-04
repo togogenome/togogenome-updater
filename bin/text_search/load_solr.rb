@@ -20,7 +20,7 @@ def load_solr (category)
       STDERR.puts "Start: load_solr [#{stanza_name}]"
       STDERR.puts Time.now.strftime("%Y/%m/%d %H:%M:%S")
       puts "start load to solr. stanza:[#{stanza_name}]"
-      file_list = file_name_list("#{DATA_DIR}/#{category}/solr/#{stanza_name}/") 
+      file_list = file_name_list("#{DATA_DIR}/#{category}/solr/#{stanza_name}/")
       file_list.each do |file|
         command = "#{SOLR_SERVER}/#{stanza_name}/update?stream.file=#{file}#{SOLR_PARAM}"
         system(%Q[curl '#{command}'])
@@ -45,7 +45,7 @@ end
 def file_name_list(path)
   file_list = []
   Dir::glob( path + "/*" ).each {|fname|
-   if FileTest.file?( fname ) 
+   if FileTest.file?( fname )
      file_list.push(fname)
    end
   }

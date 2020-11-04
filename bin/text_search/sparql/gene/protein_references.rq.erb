@@ -8,7 +8,7 @@ SELECT ?togo_gene ("^@" AS ?delimit1)
   GROUP_CONCAT(DISTINCT ?pm_no; separator = "|||") AS ?up_ref_pubmed_ids ("^@" AS ?delimit3)
   GROUP_CONCAT(DISTINCT ?name; separator = "|||") AS ?up_ref_citation_names  ("^@" AS ?delimit4)
   GROUP_CONCAT(DISTINCT ?title; separator = "|||") AS ?up_ref_citation_titles ("^@" AS ?delimit5)
-  GROUP_CONCAT(DISTINCT ?author; separator = "|||") AS ?up_ref_citation_authors 
+  GROUP_CONCAT(DISTINCT ?author; separator = "|||") AS ?up_ref_citation_authors
 WHERE {
   GRAPH <http://togogenome.org/graph/tgup>
   {
@@ -22,7 +22,7 @@ WHERE {
     ?protein up:citation ?citation .
     ?citation skos:exactMatch ?pmid .
     FILTER REGEX (STR(?pmid), "pubmed") .
-    BIND(REPLACE(STR(?pmid), "http://purl.uniprot.org/pubmed/", "") AS ?pm_no) 
+    BIND(REPLACE(STR(?pmid), "http://purl.uniprot.org/pubmed/", "") AS ?pm_no)
 
     ?citation up:title ?title ;
       up:author ?author ;

@@ -15,4 +15,4 @@ header = { 'Accept' => 'text/turtle' }
 query = { 'query' => CGI.escape(sparql)}
 url = endpoint + '?query=' + CGI.escape(sparql)
 result = client.get_content(url, nil, header)
-puts result 
+puts result

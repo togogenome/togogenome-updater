@@ -3,7 +3,7 @@ PREFIX up: <http://purl.uniprot.org/core/>
 
 CONSTRUCT
 {
- <<%= upgo_uri %>> up:classifiedWith ?uniprot_uri 
+ <<%= upgo_uri %>> up:classifiedWith ?uniprot_uri
 }
 FROM <http://togogenome.org/graph/uniprot>
 FROM <http://togogenome.org/graph/tgup>
@@ -27,7 +27,7 @@ WHERE
     }
    }
    ?uniprot_bp up:classifiedWith ?uniprot_go .
-   ?uniprot_bp up:recommendedName/up:fullName ?recommended_name . 
+   ?uniprot_bp up:recommendedName/up:fullName ?recommended_name .
    ?uniprot_uri rdfs:seeAlso ?uniprot_bp .
   } OFFSET <%= offset %> LIMIT <%= limit %>
  }

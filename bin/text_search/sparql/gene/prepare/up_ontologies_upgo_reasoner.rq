@@ -10,7 +10,7 @@ WHERE {
   GRAPH <http://togogenome.org/graph/uniprot> {
     ?protein up:classifiedWith ?concept .
     ?concept a owl:Class .
-    FILTER (STRSTARTS(STR(?concept),"http://purl.obolibrary.org/obo/GO_")) 
+    FILTER (STRSTARTS(STR(?concept),"http://purl.obolibrary.org/obo/GO_"))
     #?concept rdf:type up:Concept .
     #FILTER contains(str(?concept), 'go') .
     #BIND (REPLACE(STR(?concept), "http://purl.uniprot.org/go/", "http://purl.obolibrary.org/obo/GO_") AS ?go_uri)

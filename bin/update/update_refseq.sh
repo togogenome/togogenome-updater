@@ -7,7 +7,7 @@ rake genomes:prepare
 rake genomes:load
 echo "End: Update Assembly reports"
 
-### Fetch and create and load RefSeq 
+### Fetch and create and load RefSeq
 echo "Start: Update Refseq"
 rake refseq:fetch release$1
 rake refseq:refseq2ttl

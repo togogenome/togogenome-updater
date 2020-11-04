@@ -272,7 +272,7 @@ Examples:
   # Peek triples in the store with limit and offset
   > sparql.rb head
   > sparql.rb head 10
-  > sparql.rb head 10 50 
+  > sparql.rb head 10 50
   > sparql.rb head 10 50 json
   > sparql.rb head 10 50 xml
 

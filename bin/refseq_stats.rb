@@ -26,7 +26,7 @@ class RefseqStats
       assid = refseq ["assembly_accession"]
       bpid = refseq ["bioproject_id"]
       rsid = refseq ["refseq_id"]
-      
+
 #      next unless taxid == "243274" #delete
 
       stats[taxid] ||= {:seq_length => 0, :gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :assids => {}}
@@ -39,7 +39,7 @@ class RefseqStats
       stats[taxid][:assids][assid] = true
       stats[taxid][assid][:bpids][bpid] = true
       stats[taxid][assid][bpid][:rsids][rsid] = true
-      
+
       query_text = ERB.new(template).result(binding)
       result_refseq_stats = ""
       @sparql_ep.query(query_text, :format => 'json') do |json|
@@ -66,7 +66,7 @@ class RefseqStats
   end
 
   def output_ttl(stats, output_ttl)
-    file = File.open(output_ttl, "w") 
+    file = File.open(output_ttl, "w")
     file.puts triple("@prefix", "rdfs:", "<http://www.w3.org/2000/01/rdf-schema#>")
     file.puts triple("@prefix", "stats:", "<http://togogenome.org/stats/>")
     file.puts
@@ -78,8 +78,8 @@ class RefseqStats
             output_feature_triples(file, "refseq", rs, stats[tax][ass][bp][rs])
             file.puts triple("<http://identifiers.org/bioproject/#{bp}>", "rdfs:seeAlso", "<http://identifiers.org/refseq/#{rs}>")
             #adding for sum by bioproject
-            add_num_feature(stats[tax][ass][bp], stats[tax][ass][bp][rs])  
-            #adding for sum by taxonomy 
+            add_num_feature(stats[tax][ass][bp], stats[tax][ass][bp][rs])
+            #adding for sum by taxonomy
             if stats[tax][:assids].keys.size > 1  # prevents duplicate count when taxonomy has multiple assembly report
               prior_ass = prior_ass(stats[tax])
               #if ass == stats[tax][:assids].keys.first #select one assembly accession
@@ -111,7 +111,7 @@ class RefseqStats
           release_date = refseq["release_date"]
           assemblies["#{ass}"] = {:refseq_category => refseq_category, :release_date => release_date }
         end
-      } 
+      }
     }
     #compare
     reference = assemblies.select { |k, v| v[:refseq_category] == "reference genome" }
@@ -142,8 +142,8 @@ class RefseqStats
     org[:exon] += add[:exon]
     org[:ncrna] += add[:ncrna]
     org[:other] += add[:other]
-  end 
-  
+  end
+
   def output_feature_triples(file_writer, resource_type, resource_id, feature_stats)
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:sequence_length", feature_stats[:seq_length])
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:gene", feature_stats[:gene])

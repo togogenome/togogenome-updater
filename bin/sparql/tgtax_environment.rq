@@ -6,7 +6,7 @@ CONSTRUCT
   ?tax rdfs:subClassOf ?parent
 }
 WHERE {
-   
+
   VALUES ?gold_meo { meo:MEO_0000437 meo:MEO_0000440 }
   GRAPH <http://togogenome.org/graph/gold> {
     ?gold_id mccv:MCCV_000020 ?tax .

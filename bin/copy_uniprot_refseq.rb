@@ -14,7 +14,7 @@ class RDF2Turtle
 
     json = JSON.parse(File.read(tax_json_file))
     taxids = (json["list_taxid"] + json["list_taxup"]).sort.uniq.map {|x| x.to_i}
-    
+
     taxids.sort.each do |taxid|
       taxdir = (taxid / 1000) * 1000
       input_path = "#{input_dir}/#{taxdir}/#{taxid}.rdf"

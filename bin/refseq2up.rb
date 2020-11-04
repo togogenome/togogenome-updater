@@ -54,7 +54,7 @@ def load_upids(idmap_file)
     case xref
     when "RefSeq"
       unless $upid[id]
-        $upid[id] = []    
+        $upid[id] = []
       end
       $upid[id] << up
     when "NCBI_TaxID"
@@ -93,12 +93,12 @@ def output(refseq_data)
   $output_ttl.puts triple("tax:#{rs[:taxid]}", "rdf:type", "<http://identifiers.org/taxonomy>") unless $taxid_list[rs[:taxid]]
   $taxid_list[rs[:taxid]] = true
   $gene_list[rs[:gene_rsrc]] = true
-  
+
   if refseq_data[:protein_id] #has protein id
     protein_id = refseq_data[:protein_id]
     unless $upid[protein_id] == nil || $upid[protein_id].size == 0 #is match to up
       $upid[protein_id].each {|up|
-        up = up.split("-").first if up.index("-") # with "-" means isoform's ID. expect to protein's ID 
+        up = up.split("-").first if up.index("-") # with "-" means isoform's ID. expect to protein's ID
         next unless (taxid == $uptax[up]) # Don't link if tax_ids(ncbi,uniprot) are difference. (http://www.ncbi.nlm.nih.gov/news/06-11-2013-wp-refseqs/)
         #mapping gene uri and uniprot uri (not CDS)
         if (!$genes_upids[rs[:gene_rsrc]] || !$genes_upids[rs[:gene_rsrc]].index(up)) # not yet mapped this gene and uniprot
@@ -107,7 +107,7 @@ def output(refseq_data)
           $output_ttl.puts triple("upid:#{up}", "rdfs:seeAlso", "up:#{up}")
           #$output_ttl.puts triple("up:#{up}", "dct:publisher", "mir:MIR:00100134")  # UniProt (www.uniprot.org)
           $output_ttl.puts triple("up:#{up}", "dct:publisher", "<http://identifirs.org/miriam.resource/MIR:00100134>")  # UniProt (www.uniprot.org)
-          taxup = $uptax[up] 
+          taxup = $uptax[up]
           if taxup
             $output_ttl.puts triple("upid:#{up}", "rdfs:seeAlso", "tax:#{taxup}")
             $taxup_list[taxup] = true
@@ -138,7 +138,7 @@ def get_feature_values
   @refseq_list.each {|refseq|
     retry_cnt = 0 #prevent from infinite loop
     rsid = refseq ["refseq_id"]
-    #next unless (rsid == "NZ_CP011382.1" || rsid == "NC_003272.1" || rsid == "NC_000010.11") #TODO delete 
+    #next unless (rsid == "NZ_CP011382.1" || rsid == "NC_003272.1" || rsid == "NC_000010.11") #TODO delete
     query_text = ERB.new(template).result(binding)
     begin
       result = ""
@@ -162,19 +162,19 @@ def get_feature_values
     end
     result.each do |entry|
       refseq_data = {
-        :taxid => entry['taxonomy_id']['value'], 
+        :taxid => entry['taxonomy_id']['value'],
         :bpid => entry['bioproject_id']['value'],
         :rsid => rsid,
         :feature_rsrc => entry['feature']['value'],
         :feature_label => entry['feature_label']['value'],
         :feature_type => entry['feature_type']['value'],
         :gene_rsrc => entry['gene']['value'],
-        :gene_label => entry['gene_label']['value'] 
+        :gene_label => entry['gene_label']['value']
       }
       if entry['protein_id']
         refseq_data[:protein_id] = entry['protein_id']['value']
       else
-        refseq_data[:protein_id] = nil 
+        refseq_data[:protein_id] = nil
       end
       output(refseq_data)
     end
@@ -194,7 +194,7 @@ def create_tax_check_file
     "count_non_coding": #{$count_nc},
     "count_no_uniprot": #{$no_up.size}
   }|
-  end 
+  end
 end
 
 load_upids(idmapping_file)
@@ -206,7 +206,7 @@ output_header()
 get_feature_values()
 create_tax_check_file()
 $genes_upids.each {|key,value|
-  if value.size > 1 
+  if value.size > 1
    puts "#{key} #{value.size}"
   end
 }

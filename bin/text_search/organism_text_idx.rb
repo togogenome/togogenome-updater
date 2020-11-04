@@ -34,7 +34,7 @@ def create_json (stanza_name,query_names)
 end
 
 # convert a hash object from 1 line text data
-# 
+#
 # return value example {TODO desc}
 def organism_obj_mapping(line, query_name, columns_info)
   return line.start_with?('http://identifiers.org/taxonomy/') unless

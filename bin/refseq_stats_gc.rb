@@ -20,12 +20,12 @@ class RefseqStats
 
   def get_stats_values
     # group by tax, assembly_data
-    # {:tax_id=>"1148", 
+    # {:tax_id=>"1148",
     #  :assids=>{
     #   "GCF_000270265.1"=>
     #    [{"assembly_accession"=>"GCF_000270265.1", "tax_id"=>"1148", "bioproject_id"=>"PRJNA159873", "refseq_category"=>"na", "release_date"=>"2011/07/01", "molecule_name"=>"Chromosome", "refseq_id"=>"NC_017277.1"}],
     #   "GCF_000340785.1"=>
-    #    [{"assembly_accession"=>"GCF_000340785.1", "tax_id"=>"1148"... 
+    #    [{"assembly_accession"=>"GCF_000340785.1", "tax_id"=>"1148"...
     tax_ass = @refseq_list.group_by {|refseq|
       refseq["tax_id"]
     }.map {|key, value|
@@ -35,11 +35,11 @@ class RefseqStats
       hash = {tax_id: key, assids: assids }
     }
 
-    #count gc number from genbank file 
+    #count gc number from genbank file
     result = tax_ass.map do |entry|
       #next unless entry[:tax_id] == "1148"
       # selects prior project, when taxonomy has multiple assembly.
-      prior_ass = entry[:assids].keys.first 
+      prior_ass = entry[:assids].keys.first
       if entry[:assids].keys.size > 1
         prior_ass = prior_ass(entry)
       end
@@ -63,7 +63,7 @@ class RefseqStats
   end
 
   def output_ttl(stats, output_ttl)
-    file = File.open(output_ttl, "w") 
+    file = File.open(output_ttl, "w")
     file.puts triple("@prefix", "rdfs:", "<http://www.w3.org/2000/01/rdf-schema#>")
     file.puts triple("@prefix", "stats:", "<http://togogenome.org/stats/>")
     file.puts

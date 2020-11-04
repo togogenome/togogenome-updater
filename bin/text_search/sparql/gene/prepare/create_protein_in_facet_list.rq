@@ -14,7 +14,7 @@ WHERE {
   ?togo_gene rdfs:seeAlso ?taxonomy_id .
   ?togo_gene skos:exactMatch ?refseq_gene .
   ?togo_gene rdfs:seeAlso ?id_uniprot .
-  ?id_uniprot a <http://identifiers.org/uniprot> . 
+  ?id_uniprot a <http://identifiers.org/uniprot> .
   ?id_uniprot rdfs:seeAlso ?uniprot.
   }
   GRAPH <http://togogenome.org/graph/uniprot> {
