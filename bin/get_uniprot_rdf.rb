@@ -17,7 +17,7 @@ class GET_UNIPROT_RDF
     @log_file = File.open("#{output_dir}/get_uniport_rdf.log", "a+")
 
     json = JSON.parse(File.read(tax_json_file))
-    @taxids = (json["list_taxid"] + json["list_taxup"]).sort.uniq.map {|x| x.to_i}
+    @taxids = json["list_taxid"].sort.uniq.map {|x| x.to_i}
   end
 
   def download_rdf()

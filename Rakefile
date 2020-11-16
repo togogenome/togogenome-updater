@@ -708,7 +708,7 @@ namespace :uniprot do
   task :refseq2up do
     # Generate refseq.up.ttl
     path = "#{RDF_DIR}/togogenome/uniprot/current"
-    sh "grep 'RefSeq\\|NCBI_TaxID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{path}/filterd_idmapping.dat"
+    sh "grep 'RefSeq\\|NCBI_TaxID\\|GeneID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{path}/filterd_idmapping.dat"
     sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{path}/filterd_idmapping.dat 2> #{path}/refseq.up.log"
   end
 

@@ -1,6 +1,7 @@
 DEFINE sql:select-option "order"
 PREFIX insdc:   <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
 PREFIX obo:     <http://purl.obolibrary.org/obo/>
+prefix dc:     <http://purl.org/dc/terms/>
 
 SELECT
  ?taxonomy_id
@@ -11,6 +12,7 @@ SELECT
  (REPLACE(STR(?gene),"http://identifiers.org/refseq/","") AS ?gene)
  ?gene_label
  ?protein_id
+ ?insdc_gene_id
 FROM <http://togogenome.org/graph/refseq>
 WHERE
 {
@@ -32,5 +34,11 @@ WHERE
    ?feature rdfs:seeAlso ?protein .
    ?protein a insdc:Protein ;
      rdfs:label ?protein_id .
+ }
+ OPTIONAL
+ {
+  ?gene rdfs:seeAlso ?insdc_gene .
+  ?insdc_gene rdf:type insdc:Gene ;
+   dc:identifier ?insdc_gene_id .
  }
 }
