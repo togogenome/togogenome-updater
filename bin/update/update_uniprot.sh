@@ -2,7 +2,7 @@
 
 ### Create and load tgup(TogoGenome + UniProt)
 echo "Start: Update tgup"
-rake uniprot:refseq2up
+rake uniprot:refseq2up $1
 rake uniprot:load_tgup
 echo "End: Update tgup"
 

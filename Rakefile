@@ -131,7 +131,7 @@ end
 def isql_create(graph, name)
   sleep 1
   time = Time.now.strftime("%Y%m%d-%H%M%S")
-  path = "isql/#{time}-#{graph}-#{name}.isql"
+  path = "#{RDF_DIR}/togogenome/isql/#{time}-#{graph}-#{name}.isql"
   return path
 end
 
@@ -143,7 +143,7 @@ end
 def sh_create(graph, name)
   sleep 1
   time = Time.now.strftime("%Y%m%d-%H%M%S")
-  path = "isql/#{time}-#{graph}-#{name}.sh"
+  path = "#{RDF_DIR}/togogenome/isql/#{time}-#{graph}-#{name}.sh"
   return path
 end
 
@@ -202,7 +202,7 @@ def load_dir_multiple(path, pattern, graph, name, thread_num)
     file.puts "wait"
   end
   File.chmod(0755,sh_file)
-  sh "#{RDF_DIR}/togogenome/#{sh_file}"
+  sh "#{sh_file}"
 end
 
 def update_graph(graph, name)
@@ -304,9 +304,9 @@ namespace :faldo do
   desc "Retrieve FALDO"
   task :fetch do
     name = set_name
-    path = create_subdir('ontology/faldo', name)
+    path = create_subdir("#{RDF_DIR}/togogenome/ontology/faldo", name)
     sh "cd #{path}; wget http://biohackathon.org/resource/faldo.ttl -O faldo.ttl"
-    link_current('ontology/faldo', name)
+    link_current("#{RDF_DIR}/togogenome/ontology/faldo", name)
   end
   
   desc "Load FALDO to TogoGenome"
@@ -325,9 +325,9 @@ namespace :insdc do
   desc "Retrieve INSDC"
   task :fetch do
     name = set_name
-    path = create_subdir('ontology/insdc', name)
+    path = create_subdir("#{RDF_DIR}/togogenome/ontology/insdc", name)
     sh "cd #{path}; wget http://ddbj.nig.ac.jp/ontologies/nucleotide.ttl -O nucleotide.ttl"
-    link_current('ontology/insdc', name)
+    link_current("#{RDF_DIR}/togogenome/ontology/insdc", name)
   end
   
   desc "Load INSDC to TogoGenome"
@@ -346,9 +346,9 @@ namespace :taxonomy do
   desc "Retrieve DDBJ taxonomy"
   task :fetch do
     name = set_name
-    path = create_subdir('ontology/taxonomy', name)
+    path = create_subdir("#{RDF_DIR}/togogenome/ontology/taxonomy", name)
     sh "cd #{path}; wget http://ddbj.nig.ac.jp/ontologies/taxonomy.ttl -O taxonomy.ttl"
-    link_current('ontology/taxonomy', name)
+    link_current("#{RDF_DIR}/togogenome/ontology/taxonomy", name)
   end
   
   desc "Load Taxonomy (DDBJ) to TogoGenome"
@@ -368,9 +368,9 @@ namespace :obo_go do
   desc "Retrieve Gene Ontology"
   task :fetch do
     name = set_name
-    path = create_subdir('ontology/go', name)
+    path = create_subdir("#{RDF_DIR}/togogenome/ontology/go", name)
     sh "cd #{path}; #{HTTP_GET} http://purl.obolibrary.org/obo/go.owl"
-    link_current('ontology/go', name)
+    link_current("#{RDF_DIR}/togogenome/ontology/go", name)
   end
   
   desc "Load Gene Ontology to TogoGenome"
@@ -389,9 +389,9 @@ namespace :obo_so do
   desc "Retrieve Sequence Ontology"
   task :fetch do
     name = set_name
-    path = create_subdir('ontology/so', name)
+    path = create_subdir("#{RDF_DIR}/togogenome/ontology/so", name)
     sh "cd #{path}; #{HTTP_GET} http://purl.obolibrary.org/obo/so.owl"
-    link_current('ontology/so', name)
+    link_current("#{RDF_DIR}/togogenome/ontology/so", name)
   end
   
   desc "Load Sequence Ontology to TogoGenome"
@@ -579,9 +579,9 @@ namespace :genomes do
   desc "Rsync with NCBI sites 'genomes/ASSEMBLY_REPORTS' and 'genomes/all"
   task :fetch do
     name = set_name
-    path = create_subdir('genomes', name)
-    link_current('genomes', name)
-    sh "perl #{RDF_DIR}/togogenome/bin/linksets/ftp/assembly_reports_rsync.pl /data/store/rdf/togogenome/genomes"
+    path = create_subdir("#{RDF_DIR}/togogenome/genomes", name)
+    link_current("#{RDF_DIR}/togogenome/genomes", name)
+    sh "perl #{RDF_DIR}/togogenome/bin/linksets/ftp/assembly_reports_rsync.pl #{RDF_DIR}/togogenome/genomes"
   end
 
   desc "Convert ASSEBLY_REPORTS to Turtle"
@@ -609,8 +609,8 @@ namespace :refseq do
   desc "Retrieve RefSeq entries to refseq/current"
   task :fetch do
     name = set_name
-    create_subdir("refseq", name)
-    link_current("refseq", name)
+    create_subdir("#{RDF_DIR}/togogenome/refseq", name)
+    link_current("#{RDF_DIR}/togogenome/refseq", name)
     sh "bin/refseq_list.rb #{ENDPOINT} > #{REFSEQ_WORK_DIR}/refseq_list.json"
     sh "bin/wget_refseq.rb #{REFSEQ_WORK_DIR}/refseq_list.json #{REFSEQ_WORK_DIR}/refseq.gb true >> #{REFSEQ_WORK_DIR}/refseq_wget.log"
     #delete error data
@@ -619,21 +619,21 @@ namespace :refseq do
   
   desc "Convert RefSeq to Turtle"
   task :refseq2ttl do
-    sh "bin/refseq2ttl_all.rb #{REFSEQ_WORK_DIR}/refseq_list.json 2> #{REFSEQ_WORK_DIR}/refseq2ttl.log"
+    sh "bin/refseq2ttl_all.rb #{REFSEQ_WORK_DIR} 2> #{REFSEQ_WORK_DIR}/refseq2ttl.log"
   end
   
   desc "Convert RefSeq to FASTA"
   task :refseq2fasta do
-    sh "bin/refseq2fasta.rb > #{REFSEQ_WORK_DIR}/refseq.fasta"
+    sh "bin/refseq2fasta.rb #{REFSEQ_WORK_DIR} > #{REFSEQ_WORK_DIR}/refseq.fasta"
   end
   
   desc "Prepare JBrowse conf files"
   task :refseq2jbrowse do
-    sh "cp -pr refseq/jbrowse_blank refseq/current/jbrowse_upd"
-    sh "bin/refseq2jbrowse.rb refseq/current/refseq.fasta"
-    sh "if [ -f refseq/current/jbrowse ]; then mv refseq/current/jbrowse refseq/current/jbrowse_old; fi"
-    sh "mv refseq/current/jbrowse_upd refseq/current/jbrowse"
-    sh "rm -rf refseq/current/jbrowse_old"
+    sh "cp -pr #{RDF_DIR}/togogenome/refseq/jbrowse_blank #{RDF_DIR}/togogenome/refseq/current/jbrowse_upd"
+    sh "bin/refseq2jbrowse.rb #{REFSEQ_WORK_DIR}"
+    sh "if [ -f #{REFSEQ_WORK_DIR}/jbrowse ]; then mv #{REFSEQ_WORK_DIR}/jbrowse #{REFSEQ_WORK_DIR}/jbrowse_old; fi"
+    sh "mv #{REFSEQ_WORK_DIR}/jbrowse_upd #{REFSEQ_WORK_DIR}/jbrowse"
+    sh "rm -rf #{REFSEQ_WORK_DIR}/jbrowse_old"
   end
 
   desc "Generate RefSeq stats turtle"
@@ -674,8 +674,8 @@ namespace :uniprot do
     sh "cd #{path}; #{HTTP_GET} ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz"
     sh "cd #{path}; echo 'mirror -X uniparc_* -X uniprotkb_* -X uniref_* rdf' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release"
     link_current("#{RDF_DIR}/uniprot", name)
-    create_subdir('uniprot', name)
-    link_current('uniprot', name)
+    create_subdir("#{RDF_DIR}/togogenome/uniprot", name)
+    link_current("#{RDF_DIR}/togogenome/uniprot", name)
   end
 
   task :unzip do
@@ -706,6 +706,9 @@ namespace :uniprot do
 
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
   task :refseq2up do
+    name = set_name
+    path = create_subdir("#{RDF_DIR}/togogenome/uniprot", name)
+    link_current("#{RDF_DIR}/togogenome/uniprot", name)
     # Generate refseq.up.ttl
     path = "#{RDF_DIR}/togogenome/uniprot/current"
     sh "grep 'RefSeq\\|NCBI_TaxID\\|GeneID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{path}/filterd_idmapping.dat"
@@ -871,8 +874,8 @@ namespace :text_search do
   desc "Update data for text search"
   task :update do
     name = set_name
-    path = create_subdir('text_search', name)
-    link_current("text_search", name)
+    path = create_subdir("#{RDF_DIR}/togogenome/text_search", name)
+    link_current("#{RDF_DIR}/togogenome/text_search", name)
     sh "bin/text_search/update_text_index.sh"
   end
 end

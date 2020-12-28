@@ -7,7 +7,8 @@ require 'fileutils'
 
 SEQ_CHUNK_SIZE = 20000
 
-OUTPUT_DIR = "refseq/current/jbrowse_upd"
+work_dir = ARGV.shift
+OUTPUT_DIR = "#{work_dir}/jbrowse_upd"
 
 ENDPOINT = "http://dev.togogenome.org/sparql-app"
 
@@ -248,7 +249,7 @@ end
 sequences = {}
 
 i = 0
-Bio::FlatFile.auto(ARGF).each do |entry|
+Bio::FlatFile.auto("#{work_dir}/refseq.fasta").each do |entry|
   if $DEBUG
     break if i > 10
     i += 1

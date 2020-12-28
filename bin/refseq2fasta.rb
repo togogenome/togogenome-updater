@@ -3,7 +3,8 @@
 require 'rubygems'
 require 'bio'
 
-Dir.glob("refseq/current/refseq.gb/**/*").each do |file|
+work_dir = ARGV.shift
+Dir.glob("#{work_dir}/refseq.gb/**/*").each do |file|
   next if File.directory?(file)
   next if file[/.txt$/]
 
@@ -14,7 +15,7 @@ Dir.glob("refseq/current/refseq.gb/**/*").each do |file|
   ent = path[-1]
 
   Bio::FlatFile.auto(file).each do |entry|
-    prefix = "refseq/current/refseq.ttl/#{tax}/#{prj}/#{ent}"
+    prefix = "#{work_dir}/refseq.ttl/#{tax}/#{prj}/#{ent}"
     next unless File.exists?("#{prefix}.ttl")
     File.open("#{prefix}.fasta", "w") do |output|
       desc = %Q[refseq:#{entry.acc_version} {"definition":"#{entry.definition}", "taxonomy":"#{tax}", "bioproject":"#{prj}", "refseq":"#{entry.acc_version}"}]

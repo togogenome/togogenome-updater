@@ -4,15 +4,16 @@ require 'json'
 require 'fileutils'
 require 'parallel'
 
-input_dir = "refseq/current/refseq.gb"
-output_dir = "refseq/current/refseq.ttl"
-output_all = "refseq/current/all.turtle"
+work_dir = ARGV.shift
+input_dir = "#{work_dir}/refseq.gb"
+output_dir = "#{work_dir}/refseq.ttl"
+output_all = "#{work_dir}/all.turtle"
 refseq2ttl = "bin/rdfsummit/insdc2ttl/insdc2ttl.rb"
 
 system(%Q[ruby #{refseq2ttl} -p > #{output_all}])
 
-refseq_json = ARGV.shift
-refseq_list = open("#{refseq_json}") do |io|
+
+refseq_list = open("#{work_dir}/refseq_list.json") do |io|
   JSON.load(io)
 end
 
