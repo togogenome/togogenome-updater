@@ -41,11 +41,25 @@ class RefseqStats
       stats[taxid][assid][bpid][:rsids][rsid] = true
 
       query_text = ERB.new(template).result(binding)
-      result_refseq_stats = ""
-      @sparql_ep.query(query_text, :format => 'json') do |json|
-        result_refseq_stats += json
+      retry_cnt = 0 #prevent from infinite loop
+      begin
+        result_refseq_stats = ""
+        @sparql_ep.query(query_text, :format => 'json') do |json|
+          result_refseq_stats += json
+        end
+        result_cnt = JSON.parse(result_refseq_stats)["results"]["bindings"]
+      rescue # when occures timeout or json parse error
+        retry_cnt += 1
+        $stderr.puts "error get refseq stats of #{rsid} ."
+        if retry_cnt <= 10
+          $stderr.puts "start retry after 30 sec..."
+          sleep 30
+          retry
+        else #prevent from infinite loop
+          $stderr.puts "finally, cloudn't get stats of #{rsid} . Please check the data or environment"
+          next
+        end
       end
-      result_cnt = JSON.parse(result_refseq_stats)["results"]["bindings"]
       puts "#{taxid} #{assid} #{bpid} #{rsid}"
       result_cnt.each do |refseq_stats|
         stats[taxid][assid][bpid][rsid][:seq_length] = refseq_stats['seq_length']['value'].to_i

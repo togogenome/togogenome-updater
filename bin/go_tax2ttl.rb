@@ -20,6 +20,7 @@ class GO_TAX2RDF
   def get_tax_list
     puts 'get_tax_list'
     sparql = File.read("#{@base_dir}/sparql/uptax_tax_list.rq")
+    FileUtils.mkdir_p @output_dir
     isql_query(sparql, "#{@output_dir}/gotax_list.txt")
     gotax_list = []
     File.open("#{@output_dir}/gotax_list.txt") do |f|

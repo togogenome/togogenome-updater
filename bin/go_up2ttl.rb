@@ -20,6 +20,7 @@ class GO_UP2RDF
   def get_upgo_list
     puts 'start get_upgo_list'
     sparql = File.read("#{@base_dir}/sparql/upgo_list.rq")
+    FileUtils.mkdir_p @output_dir
     isql_query(sparql, "#{@output_dir}/upgo_list.txt")
     upgo_list = []
     File.open("#{@output_dir}/upgo_list.txt") do |f|
