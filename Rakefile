@@ -689,11 +689,6 @@ namespace :uniprot do
     sh "xz -dv #{path}/uniprot_unzip/*.xz"
   end
 
-  desc "Split UniProt RDF into taxon files"
-  task :rdf2taxon do
-    sh "#{RDF_DIR}/uniprot/bin/uniprot_taxon.rb #{RDF_DIR}/uniprot/current/uniprot_unzip/uniprotkb #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf &>> #{RDF_DIR}/uniprot/current/rdf2taxon.log"
-  end
-
   task :remove_unzip do
     sh "rm -rf #{RDF_DIR}/uniprot/current/uniprot_unzip/uniprotkb"
   end

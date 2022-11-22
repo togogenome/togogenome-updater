@@ -4,6 +4,5 @@
 echo "Start Fetch Uniprot"
 rake uniprot:fetch $1
 rake uniprot:unzip
-rake uniprot:rdf2taxon
 echo "End Fetch Uniprot"
 
