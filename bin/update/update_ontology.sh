@@ -10,11 +10,11 @@ echo "End: Fetch ontologies"
 
 ### Load ontologies
 echo "Start: Load ontologies"
-rake ontology:faldo:load 20170713
-rake ontology:taxonomy:load 20170713
-rake ontology:insdc:load 20170713
-rake ontology:obo_go:load 20170713
-rake ontology:obo_so:load 20170713
+rake ontology:faldo:load
+rake ontology:taxonomy:load
+rake ontology:insdc:load
+rake ontology:obo_go:load
+rake ontology:obo_so:load
 rake ontology:meo:load 0.7
 rake ontology:meo_dag:load 0.9
 rake ontology:mpo:load 0.7
