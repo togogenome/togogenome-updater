@@ -27,15 +27,15 @@ class GET_UNIPROT_RDF
         begin
           if !(File.exist?("#{tax_id}.rdf.gz")) then #ignore already exist
             log_txt = "[download rdf] tax_id:#{tax_id}"
-            puts "curl  -o #{tax_id}.rdf.gz 'https://legacy.uniprot.org/uniprot/?query=taxonomy:#{tax_id}&format=rdf&compress=yes' -w '%{http_code}' -s > status.txt"
-            system("curl  -o #{tax_id}.rdf.gz 'https://legacy.uniprot.org/uniprot/?query=taxonomy:#{tax_id}&format=rdf&compress=yes' -w '%{http_code}\n' -s > status.txt")
+            puts "curl -o #{tax_id}.rdf.gz 'https://rest.uniprot.org/uniprotkb/stream?query=organism_id:#{tax_id}&format=rdf&compressed=true' -w '%{http_code}' -s > status.txt"
+            system("curl -o #{tax_id}.rdf.gz 'https://rest.uniprot.org/uniprotkb/stream?query=organism_id:#{tax_id}&format=rdf&compressed=true' -w '%{http_code}' -s > status.txt")
             download_flag = false
             if (File.exist?("#{tax_id}.rdf.gz")) && (File.exist?("status.txt"))
               download_flag = true if File.read("status.txt").to_s.start_with?("200")
             end
             log_txt += " first:#{download_flag}"
             unless download_flag == true # 再実行
-              system("curl  -o #{tax_id}.rdf.gz 'https://legacy.uniprot.org/uniprot/?query=taxonomy:#{tax_id}&format=rdf&compress=yes' -w '%{http_code}\n' -s > status.txt")
+              system("curl -o #{tax_id}.rdf 'https://rest.uniprot.org/uniprotkb/stream?query=organism_id:#{tax_id}&format=rdf&compressed=true' -w '%{http_code}' -s > status.txt")
               log_txt += " second:#{File.read("status.txt").to_s}"
               @missing_file.puts "#{tax_id}" unless File.read("status.txt").to_s.start_with?("200")
             end
