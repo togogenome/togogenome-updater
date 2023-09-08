@@ -1,11 +1,15 @@
 PREFIX asm: <http://ddbj.nig.ac.jp/ontologies/assembly/>
+PREFIX id_tax: <http://identifiers.org/taxonomy/>
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
 
-SELECT DISTINCT ?assembly_accession ?tax_id ?bioproject_accession ?refseq_category ?release_date ?replicon_type ?seq_id
+SELECT DISTINCT ?assembly_accession ?tax_id ?bioproject_accession ?refseq_category ?release_date ?replicon_type ?seq_id ?relation_to_type_material
 FROM <http://togogenome.org/graph/assembly_report>
+FROM <http://togogenome.org/graph/taxonomy>
 {
  VALUES ?additional_taxid { "103690" "2336" "243276" "267377" "768679"}
  ?assembly asm:assembly_id ?assembly_accession ;
   rdf:type <http://identifiers.org/refseq> ;
+  asm:taxon  ?tax_uri ;
   asm:tax_id  ?tax_id ;
   asm:bioproject_accession ?bioproject_accession ;
   asm:gbrs_paired_asm ?gbrs ;
@@ -13,7 +17,10 @@ FROM <http://togogenome.org/graph/assembly_report>
   asm:assembly_level ?level ;
   asm:refseq_category ?refseq_category ; #use stats
   asm:release_date ?release_date ; #use stats
-  asm:sequence ?seq .
+  asm:sequence ?seq ;
+  asm:relation_to_type_material ?relation_to_type_material .
+ ?tax_uri a tax:Taxon ;
+    rdfs:subClassOf* id_tax:<%= tax_id %> .
  ?seq asm:assigned_molecule_location_type ?replicon_type ;
   asm:sequence_role "assembled-molecule" ;
   asm:refseq_accession ?seq_id .
@@ -22,5 +29,6 @@ FROM <http://togogenome.org/graph/assembly_report>
    AND !((?tax_id ="9606") AND !(?bioproject_accession = "PRJNA168"))
    AND regex(?seq_id, "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{2,4}\\d+))(\\.\\d+)?$")
    AND (?refseq_category IN ("representative genome", "reference genome") OR ?tax_id = ?additional_taxid)
+   <%= type_material %>
  )
 } ORDER BY ?tax_id ?bioproject_accession ?replicon_type ?seq_id
