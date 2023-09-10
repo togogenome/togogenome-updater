@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 
 ### Fetch daily update ontology files
 echo "Start: Fetch ontologies"
