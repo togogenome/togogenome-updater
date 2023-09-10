@@ -9,7 +9,6 @@ class UpdateChecker
   @@UNIPROT_PATH = "/data/store/rdf/uniprot/"
   @@BASE_DIR = "/data/store/rdf/togogenome/"
   @@VIRTUOSO_ISQL_PORT = 20710
-  @@WEBHOOK_URL = "https://hooks.slack.com/services/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"
 
   def initialize(uniprot_ver, refseq_ver, check_item)
     @uniprot_ver = uniprot_ver
@@ -44,6 +43,11 @@ class UpdateChecker
     else
       @previous_stats = {}
     end
+
+    # slack通知用
+    @webhook_url = File.read("#{@@BASE_DIR}/logs/update_log/webhook_url.txt")
+
+    # check実行
     check(check_item)
   end
 
@@ -63,7 +67,7 @@ class UpdateChecker
 
   # エラーが起きた時にslackに通知を送る
   def notification(message)
-    uri = URI.parse(@@WEBHOOK_URL)
+    uri = URI.parse(@webhook_url)
     message_data = {
       'channel' => '#togogenome',
       'username' => 'togogenome updater notification',
