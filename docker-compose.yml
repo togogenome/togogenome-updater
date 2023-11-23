@@ -1,0 +1,46 @@
+version: '3'
+services:
+  updater:
+    container_name: togogenome_updater
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: togogenome_updater
+    user: ${UID:-0}:${DOCKER_GID:-0}
+    environment:
+      - RDF_DATA_DIR=${RDF_DATA_DIR}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock 
+      - ${PWD}/:/updater
+      - ${PWD}/../rdfsummit:/rdfsummit
+      - /mnt/nas05/rdfportal/togogenome/data:/data
+    networks:
+      - togogenome_updater
+  virtuoso:
+    container_name: togogenome_updater_virtuoso
+    image: openlink/virtuoso-opensource-7:7.2.11
+    #user: ${UID:-0}:${GID:-0}
+    environment:
+      VIRT_Parameters_DirsAllowed: /data
+      VIRT_Parameters_NumberOfBuffers: 27200000
+      VIRT_Parameters_MaxDirtyBuffers: 20000000
+      VIRT_Parameters_MaxQueryMem: 10G
+      VIRT_Parameters_MaxClientConnections: 20
+      VIRT_Client_SQL_PREFETCH_ROWS: 10000
+      VIRT_Client_SQL_PREFETCH_BYTES: 1600000
+      VIRT_SPARQL_ResultSetMaxRows: 1000000
+      VIRT_SPARQL_MaxQueryCostEstimationTime: 0
+      VIRT_SPARQL_MaxQueryExecutionTime: 600
+      VIRT_SPARQL_MaxSortedTopRows: 200000
+      DBA_PASSWORD: dba
+      TZ: Asia/Tokyo
+    volumes:
+      - /mnt/nas05/rdfportal/togogenome/data:/data
+      - ${PWD}/../virtuoso/database:/opt/virtuoso-opensource/database
+    ports:
+      - "51111:1111"
+      - "58890:8890"
+    networks:
+      - togogenome_updater
+networks:
+  togogenome_updater:

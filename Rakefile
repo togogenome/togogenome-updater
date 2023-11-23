@@ -2,7 +2,9 @@
 ### TogoGenome update procedures
 ###
 
-RDF_DIR = "/data/store/rdf"
+RDF_DIR = "/data"
+SCRIPT_DIR = "/updater/bin"
+RDFSUMMIT_DIR = "/rdfsummit"
 GRAPH_NS = "http://togogenome.org"
 
 HTTP_GET = "lftpget"
@@ -11,8 +13,9 @@ HTTP_GET = "lftpget"
 ### Triple store
 ###
 
-ISQL = "/data/store/virtuoso7.1/bin/isql 20711 dba dba"
-ENDPOINT = "http://ep.dbcls.jp/sparql-import"
+ISQL = "/opt/virtuoso-opensource/bin/isql 1111 dba dba"
+DOCKER_VIRTUOSO = "docker exec togogenome_updater_virtuoso"
+ENDPOINT = "http://virtuoso:8890/sparql"
 
 USAGE = <<"USAGE"
 
@@ -131,25 +134,25 @@ end
 def isql_create(graph, name)
   sleep 1
   time = Time.now.strftime("%Y%m%d-%H%M%S")
-  path = "#{RDF_DIR}/togogenome/isql/#{time}-#{graph}-#{name}.isql"
+  path = "#{RDF_DIR}/isql/#{time}-#{graph}-#{name}.isql"
   return path
 end
 
 def isql_write(file, line)
-  file.puts "ECHOLN \"#{line}\";"
-  file.puts line
+  file.puts "#{ISQL} exec=\"#{line}\";"
 end
 
 def sh_create(graph, name)
   sleep 1
   time = Time.now.strftime("%Y%m%d-%H%M%S")
-  path = "#{RDF_DIR}/togogenome/isql/#{time}-#{graph}-#{name}.sh"
+  path = "#{RDF_DIR}/isql/#{time}-#{graph}-#{name}.sh"
   return path
 end
 
 def load_rdf(path, graph, name)
   isql = isql_create(graph, name)
   File.open(isql, "w") do |file|
+    file.puts "#!/bin/sh"
     isql_write(file, "log_enable(2, 1);")
     isql_write(file, "DB.DBA.RDF_LOAD_RDFXML_MT(file_to_string_output('#{path}'), '', '#{GRAPH_NS}/graph/#{graph}');")
     isql_write(file, "checkpoint;")
@@ -160,6 +163,7 @@ end
 def load_ttl(path, graph, name)
   isql = isql_create(graph.sub('/',''), name)
   File.open(isql, "w") do |file|
+    file.puts "#!/bin/sh"
     isql_write(file, "log_enable(2, 1);")
     #   1 - Single quoted and double quoted strings may with newlines.
     #   2 - Allows bnode predicates (but SPARQL processor may ignore them!).
@@ -175,18 +179,19 @@ def load_ttl(path, graph, name)
     isql_write(file, "DB.DBA.TTLP_MT(file_to_string_output('#{path}'), '', '#{GRAPH_NS}/graph/#{graph}', 81);")
     isql_write(file, "checkpoint;")
   end
-  sh "#{ISQL} #{isql}"
+  sh "#{DOCKER_VIRTUOSO} sh #{isql}"
 end
 
 def load_dir(path, pattern, graph, name)
   isql = isql_create(graph.sub('/',''), name)
   File.open(isql, "w") do |file|
+    file.puts "#!/bin/sh"
     isql_write(file, "log_enable(2, 1);")
     isql_write(file, "ld_dir_all('#{path}', '#{pattern}', '#{GRAPH_NS}/graph/#{graph}');")
     isql_write(file, "rdf_loader_run();")
     isql_write(file, "checkpoint;")
   end
-  sh "#{ISQL} #{isql}"
+  sh "#{DOCKER_VIRTUOSO} sh #{isql}"
 end
 
 def load_dir_multiple(path, pattern, graph, name, thread_num)
@@ -198,11 +203,11 @@ def load_dir_multiple(path, pattern, graph, name, thread_num)
     for num in 1..thread_num do
       file.puts "#{ISQL} exec=\"rdf_loader_run();\" &"
     end
-    file.puts "#{ISQL} exec=\"checkpoint;\""
     file.puts "wait"
+    file.puts "#{ISQL} exec=\"checkpoint;\""
   end
   File.chmod(0755,sh_file)
-  sh "#{sh_file}"
+  sh "#{DOCKER_VIRTUOSO} sh #{sh_file}"
 end
 
 def update_graph(graph, name)
@@ -222,9 +227,10 @@ def update_graph(graph, name)
   ;"
   isql = isql_create(graph, name)
   File.open(isql, "w") do |file|
+    file.puts "#!/bin/sh"
     isql_write(file, sparql)
   end
-  sh "#{ISQL} #{isql}"
+  sh "#{DOCKER_VIRTUOSO} sh #{isql}"
 end
 
 ###
@@ -266,9 +272,10 @@ namespace :graph do
     ;"
     isql = isql_create('stat', 'graph')
     File.open(isql, "w") do |file|
+      file.puts "#!/bin/sh"
       isql_write(file, sparql)
     end
-    sh "#{ISQL} #{isql}"
+    sh "#{DOCKER_VIRTUOSO} sh #{isql}"
   end
   
   desc "Drop graph"
@@ -276,12 +283,13 @@ namespace :graph do
     name = set_name
     isql = isql_create('drop', name)
     File.open(isql, "w") do |file|
+      file.puts "#!/bin/sh"
       isql_write(file, "log_enable(2, 1);")
       isql_write(file, "sparql clear graph <#{GRAPH_NS}/graph/#{name}>;")
       #[TODO] delete graph infomation from graph's graph
       isql_write(file, "DELETE FROM DB.DBA.LOAD_LIST where ll_graph = '#{GRAPH_NS}/graph/#{name}';") #delete load history for reload
     end
-    sh "#{ISQL} #{isql}"
+    sh "#{DOCKER_VIRTUOSO} sh #{isql}"
   end
   
   desc "Show number of remaining files for loading"
@@ -304,15 +312,15 @@ namespace :faldo do
   desc "Retrieve FALDO"
   task :fetch do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/ontology/faldo", name)
+    path = create_subdir("#{RDF_DIR}/ontology/faldo", name)
     sh "cd #{path}; wget http://biohackathon.org/resource/faldo.ttl -O faldo.ttl"
-    link_current("#{RDF_DIR}/togogenome/ontology/faldo", name)
+    link_current("#{RDF_DIR}/ontology/faldo", name)
   end
   
   desc "Load FALDO to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/faldo/current/faldo.ttl", 'faldo', name)
+    load_ttl("#{RDF_DIR}/ontology/faldo/current/faldo.ttl", 'faldo', name)
     update_graph('faldo', name)
   end
 end
@@ -325,15 +333,15 @@ namespace :insdc do
   desc "Retrieve INSDC"
   task :fetch do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/ontology/insdc", name)
+    path = create_subdir("#{RDF_DIR}/ontology/insdc", name)
     sh "cd #{path}; wget http://ddbj.nig.ac.jp/ontologies/nucleotide.ttl -O nucleotide.ttl"
-    link_current("#{RDF_DIR}/togogenome/ontology/insdc", name)
+    link_current("#{RDF_DIR}/ontology/insdc", name)
   end
   
   desc "Load INSDC to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/insdc/current/nucleotide.ttl", 'insdc', name)
+    load_ttl("#{RDF_DIR}/ontology/insdc/current/nucleotide.ttl", 'insdc', name)
     update_graph('insdc', name)
   end
 end
@@ -346,16 +354,16 @@ namespace :taxonomy do
   desc "Retrieve DDBJ taxonomy"
   task :fetch do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/ontology/taxonomy", name)
+    path = create_subdir("#{RDF_DIR}/ontology/taxonomy", name)
     sh "cd #{path}; wget http://ddbj.nig.ac.jp/ontologies/taxonomy.ttl -O taxonomy.ttl"
-    link_current("#{RDF_DIR}/togogenome/ontology/taxonomy", name)
+    link_current("#{RDF_DIR}/ontology/taxonomy", name)
   end
   
   desc "Load Taxonomy (DDBJ) to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/taxonomy/current/taxonomy.ttl", 'taxonomy', name)
-    #load_ttl("#{RDF_DIR}/togogenome/ontology/taxonomy/current/taxcite.ttl", 'taxonomy', name)
+    load_ttl("#{RDF_DIR}/ontology/taxonomy/current/taxonomy.ttl", 'taxonomy', name)
+    #load_ttl("#{RDF_DIR}/ontology/taxonomy/current/taxcite.ttl", 'taxonomy', name)
     update_graph('taxonomy', name)
   end
 end
@@ -368,15 +376,15 @@ namespace :obo_go do
   desc "Retrieve Gene Ontology"
   task :fetch do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/ontology/go", name)
+    path = create_subdir("#{RDF_DIR}/ontology/go", name)
     sh "cd #{path}; #{HTTP_GET} http://purl.obolibrary.org/obo/go.owl"
-    link_current("#{RDF_DIR}/togogenome/ontology/go", name)
+    link_current("#{RDF_DIR}/ontology/go", name)
   end
   
   desc "Load Gene Ontology to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/togogenome/ontology/go/current/go.owl", 'go', name)
+    load_rdf("#{RDF_DIR}/ontology/go/current/go.owl", 'go', name)
     update_graph('go', name)
   end
 end
@@ -389,15 +397,15 @@ namespace :obo_so do
   desc "Retrieve Sequence Ontology"
   task :fetch do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/ontology/so", name)
+    path = create_subdir("#{RDF_DIR}/ontology/so", name)
     sh "cd #{path}; #{HTTP_GET} http://purl.obolibrary.org/obo/so.owl"
-    link_current("#{RDF_DIR}/togogenome/ontology/so", name)
+    link_current("#{RDF_DIR}/ontology/so", name)
   end
   
   desc "Load Sequence Ontology to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/togogenome/ontology/so/current/so.owl", 'so', name)
+    load_rdf("#{RDF_DIR}/ontology/so/current/so.owl", 'so', name)
     update_graph('so', name)
   end
 end
@@ -410,7 +418,7 @@ namespace :meo do
  desc "Load MEO to TogoGenome"
  task :load do
    name = set_name
-   load_rdf("#{RDF_DIR}/togogenome/ontology/MEO/current/meo.owl", 'meo', name)
+   load_rdf("#{RDF_DIR}/ontology/MEO/current/meo.owl", 'meo', name)
    update_graph('meo', name)
  end
 end
@@ -423,7 +431,7 @@ namespace :meo_dag do
   desc "Load MEO0.9 to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/MEO_0.9/current/meo.ttl", 'meo0.9', name)
+    load_ttl("#{RDF_DIR}/ontology/MEO_0.9/current/meo.ttl", 'meo0.9', name)
     update_graph('meo0.9', name)
   end
 end
@@ -436,7 +444,7 @@ namespace :mpo do
   desc "Load MPO to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/MPO/current/mpo.ttl", 'mpo', name)
+    load_ttl("#{RDF_DIR}/ontology/MPO/current/mpo.ttl", 'mpo', name)
     update_graph('mpo', name)
   end
 end
@@ -449,7 +457,7 @@ namespace :mccv do
   desc "Load MCCV to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/MCCV/current/mccv.ttl", 'mccv', name)
+    load_ttl("#{RDF_DIR}/ontology/MCCV/current/mccv.ttl", 'mccv', name)
     update_graph('mccv', name)
   end
 end
@@ -462,14 +470,14 @@ namespace :pdo do
   desc "Load PDO to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/togogenome/ontology/PDO/current/pdo.owl", 'pdo', name)
+    load_rdf("#{RDF_DIR}/ontology/PDO/current/pdo.owl", 'pdo', name)
     update_graph('pdo', name)
   end
 
   desc "Load PDO_MAPPING to TogoGenome (rename to pdo_lod ?)"
   task :load_lod do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/PDO/current/mapping.ttl", 'pdo_mapping', name)
+    load_ttl("#{RDF_DIR}/ontology/PDO/current/mapping.ttl", 'pdo_mapping', name)
     update_graph('pdo_mapping', name)
   end
 end
@@ -482,7 +490,7 @@ namespace :csso do
   desc "Load CSSO to TogoGenome (move to ontology/CSSO ?)"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/togogenome/ontology/PDO/current/csso.owl", 'csso', name)
+    load_rdf("#{RDF_DIR}/ontology/PDO/current/csso.owl", 'csso', name)
     update_graph('csso', name)
   end
 end
@@ -495,8 +503,8 @@ namespace :gazetteer do
   desc "Load GAZETTEER to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/togogenome/ontology/GAZETTEER/current/gazetteer.owl", 'gazetteer', name)
-    load_ttl("#{RDF_DIR}/togogenome/ontology/GAZETTEER/current/gazetteer_lonlat.ttl", 'gazetteer', name)
+    load_rdf("#{RDF_DIR}/ontology/GAZETTEER/current/gazetteer.owl", 'gazetteer', name)
+    load_ttl("#{RDF_DIR}/ontology/GAZETTEER/current/gazetteer_lonlat.ttl", 'gazetteer', name)
     update_graph('gazetteer', name)
   end
 end
@@ -509,7 +517,7 @@ namespace :brc do
   desc "Load BRC to TogoGenome"
   task :load do
     name = set_name
-    load_dir("#{RDF_DIR}/togogenome/ontology/BRC/current", '*.ttl', 'brc', name)
+    load_dir("#{RDF_DIR}/ontology/BRC/current", '*.ttl', 'brc', name)
     update_graph('brc', name)
   end
 end
@@ -522,7 +530,7 @@ namespace :nbrc do
   desc "Load NBRC to TogoGenome"
   task :load do
     name = set_name
-    load_dir("#{RDF_DIR}/togogenome/ontology/nbrc/current", '*.ttl', 'nbrc', name)
+    load_dir("#{RDF_DIR}/ontology/nbrc/current", '*.ttl', 'nbrc', name)
     update_graph('nbrc', name)
   end
 end
@@ -535,7 +543,7 @@ namespace :jcm do
   desc "Load JCM to TogoGenome"
   task :load do
     name = set_name
-    load_dir("#{RDF_DIR}/togogenome/ontology/jcm/current", '*.ttl', 'jcm', name)
+    load_dir("#{RDF_DIR}/ontology/jcm/current", '*.ttl', 'jcm', name)
     update_graph('jcm', name)
   end
 end
@@ -548,10 +556,10 @@ namespace :gold do
   desc "Load GOLD to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/GOLD/current/gold2meo.ttl", 'gold', name)
-    load_ttl("#{RDF_DIR}/togogenome/ontology/GOLD/current/gold2mpo.ttl", 'gold', name)
-    load_ttl("#{RDF_DIR}/togogenome/ontology/GOLD/current/gold2taxon.ttl", 'gold', name)
-    load_dir("#{RDF_DIR}/togogenome/ontology/GOLD/current/additional", '*.ttl', 'gold', name)
+    load_ttl("#{RDF_DIR}/ontology/GOLD/current/gold2meo.ttl", 'gold', name)
+    load_ttl("#{RDF_DIR}/ontology/GOLD/current/gold2mpo.ttl", 'gold', name)
+    load_ttl("#{RDF_DIR}/ontology/GOLD/current/gold2taxon.ttl", 'gold', name)
+    load_dir("#{RDF_DIR}/ontology/GOLD/current/additional", '*.ttl', 'gold', name)
     update_graph('gold', name)
   end
 end
@@ -564,7 +572,7 @@ namespace :gmo do
   desc "Load GMO to TogoGenome"
   task :load do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/GMO/current/gmo.ttl", 'gmo', name)
+    load_ttl("#{RDF_DIR}/ontology/GMO/current/gmo.ttl", 'gmo', name)
     update_graph('gmo', name)
   end
 end
@@ -579,22 +587,24 @@ namespace :genomes do
   desc "Rsync with NCBI sites 'genomes/ASSEMBLY_REPORTS' and 'genomes/all"
   task :fetch do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/genomes", name)
-    link_current("#{RDF_DIR}/togogenome/genomes", name)
-    sh "perl #{RDF_DIR}/togogenome/bin/linksets/ftp/assembly_reports_rsync.pl #{RDF_DIR}/togogenome/genomes"
+    path = create_subdir("#{RDF_DIR}/genomes", name)
+    link_current("#{RDF_DIR}/genomes", name)
+
+    # download only refseq(GCF) data. skip genbank(GCA) data
+    sh "rsync -auvk --delete ftp.ncbi.nlm.nih.gov::genomes/all/GCF --include='*/' --include='*.txt' --exclude='*' #{RDF_DIR}/genomes/data/genomes/all >> #{RDF_DIR}/current/genome_rsync.log 2>&1"
+    sh "rsync -auvk --delete ftp.ncbi.nlm.nih.gov::genomes/ASSEMBLY_REPORTS --include='*/' --include='*.txt' --exclude='*' #{RDF_DIR}/genomes/data/genomes >> #{RDF_DIR}/genomes/current/genome_rsync.log 2>&1"
   end
 
   desc "Convert ASSEBLY_REPORTS to Turtle"
   task :prepare do
-    sh "cd #{RDF_DIR}/togogenome/bin/rdfsummit/; #{RDF_DIR}/togogenome/bin/rdfsummit/insdc2ttl/assembly_reports2ttl.rb #{RDF_DIR}/togogenome/genomes/data #{RDF_DIR}/togogenome/genomes/current"
+    sh "cd #{RDFSUMMIT_DIR}/; #{RDFSUMMIT_DIR}/insdc2ttl/assembly_reports2ttl.rb #{RDF_DIR}/genomes/data #{RDF_DIR}/genomes/current"
   end
 
   desc "Load Assembly report Turtle to TogoGenome"
   task :load do
     name = set_name
-    # load only refseq(GCF) data. skip genbank(GCA) data
-    load_ttl("#{RDF_DIR}/togogenome/genomes/current/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.ttl", 'assembly_report', name)
-    load_dir_multiple("#{RDF_DIR}/togogenome/genomes/current/genomes/all/GCF", '*.ttl', 'assembly_report', name, 6)
+    load_ttl("#{RDF_DIR}/genomes/current/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.ttl", 'assembly_report', name)
+    load_dir_multiple("#{RDF_DIR}/genomes/current/genomes/all/GCF", '*.ttl', 'assembly_report', name, 6)
     update_graph('assembly_report', name)
   end
 end
@@ -604,13 +614,13 @@ end
 ###
 
 namespace :refseq do
-  REFSEQ_WORK_DIR = "#{RDF_DIR}/togogenome/refseq/current" 
+  REFSEQ_WORK_DIR = "#{RDF_DIR}/refseq/current" 
 
   desc "Retrieve RefSeq entries to refseq/current"
   task :fetch do
     name = set_name
-    create_subdir("#{RDF_DIR}/togogenome/refseq", name)
-    link_current("#{RDF_DIR}/togogenome/refseq", name)
+    create_subdir("#{RDF_DIR}/refseq", name)
+    link_current("#{RDF_DIR}/refseq", name)
     sh "bin/refseq_list.rb #{ENDPOINT} > #{REFSEQ_WORK_DIR}/refseq_list.json"
     sh "bin/wget_refseq.rb #{REFSEQ_WORK_DIR}/refseq_list.json #{REFSEQ_WORK_DIR}/refseq.gb true >> #{REFSEQ_WORK_DIR}/refseq_wget.log"
     #delete error data
@@ -629,7 +639,7 @@ namespace :refseq do
   
   desc "Prepare JBrowse conf files"
   task :refseq2jbrowse do
-    sh "cp -pr #{RDF_DIR}/togogenome/refseq/jbrowse_blank #{RDF_DIR}/togogenome/refseq/current/jbrowse_upd"
+    sh "cp -pr #{RDF_DIR}/refseq/jbrowse_blank #{RDF_DIR}/refseq/current/jbrowse_upd"
     sh "bin/refseq2jbrowse.rb #{REFSEQ_WORK_DIR}"
     sh "if [ -f #{REFSEQ_WORK_DIR}/jbrowse ]; then mv #{REFSEQ_WORK_DIR}/jbrowse #{REFSEQ_WORK_DIR}/jbrowse_old; fi"
     sh "mv #{REFSEQ_WORK_DIR}/jbrowse_upd #{REFSEQ_WORK_DIR}/jbrowse"
@@ -671,22 +681,14 @@ namespace :uniprot do
   task :fetch do
     name = set_name
     path = create_subdir("#{RDF_DIR}/uniprot", name)
-    sh "cd #{path}; #{HTTP_GET} ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz"
-    sh "cd #{path}; echo 'mirror -X uniparc_* -X uniprotkb_* -X uniref_* rdf' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release"
+    sh "cd #{path}; echo 'mirror -I idmapping.dat.gz -X *' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping"
+    sh "cd #{path}; echo 'mirror -X uniparc_* -X uniprotkb_* -X uniref* rdf' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release"
     link_current("#{RDF_DIR}/uniprot", name)
-    create_subdir("#{RDF_DIR}/togogenome/uniprot", name)
-    link_current("#{RDF_DIR}/togogenome/uniprot", name)
   end
 
   task :unzip do
     path = "#{RDF_DIR}/uniprot/current"
-    sh "mkdir -p #{path}/uniprot_unzip"
-    sh "cp -p #{path}/rdf/core.owl #{path}/uniprot_unzip"
-    sh "cp -p #{path}/rdf/*.owl.xz #{path}/uniprot_unzip"
-    sh "cp -p #{path}/rdf/[a-t]*.rdf.xz #{path}/uniprot_unzip"
-    sh "cp -p #{path}/idmapping.dat.gz #{path}/uniprot_unzip"
-    sh "gunzip #{path}/uniprot_unzip/*.gz"
-    sh "xz -dv #{path}/uniprot_unzip/*.xz"
+    sh "xz -dv #{path}/rdf/*.xz"
   end
 
   task :remove_unzip do
@@ -695,17 +697,17 @@ namespace :uniprot do
 
   desc "Convert UniProt taxon RDF to Turtle"
   task :taxon2ttl do
-    path = "#{RDF_DIR}/togogenome/uniprot/current"
-    sh "#{RDF_DIR}/togogenome/bin/uniprot_rdf2ttl.rb #{path}/refseq #{path}/refseq_ttl &>> #{path}/rapper_ttl.log"
+    path = "#{RDF_DIR}/uniprot/current"
+    sh "#{SCRIPT_DIR}/uniprot_rdf2ttl.rb #{path}/refseq #{path}/refseq_ttl &>> #{path}/rapper_ttl.log"
   end
 
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
   task :refseq2up do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/uniprot", name)
-    link_current("#{RDF_DIR}/togogenome/uniprot", name)
+    path = create_subdir("#{RDF_DIR}/uniprot", name)
+    link_current("#{RDF_DIR}/uniprot", name)
     # Generate refseq.up.ttl
-    path = "#{RDF_DIR}/togogenome/uniprot/current"
+    path = "#{RDF_DIR}/uniprot/current"
     sh "grep 'RefSeq\\|NCBI_TaxID\\|GeneID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{path}/filterd_idmapping.dat"
     sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{path}/filterd_idmapping.dat 2> #{path}/refseq.up.log"
   end
@@ -713,18 +715,18 @@ namespace :uniprot do
   desc "Load TogoGenome to UniProt mappings"
   task :load_tgup do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/uniprot/current/refseq.up.ttl", 'tgup', name)
+    load_ttl("#{RDF_DIR}/uniprot/current/refseq.up.ttl", 'tgup', name)
     update_graph('tgup', name)
   end
 
   desc "Download UniProt rdf (by tax_ids) for TogoGenome"
   task :download_rdf do
-    sh "bin/get_uniprot_rdf.rb #{RDF_DIR}/togogenome/uniprot/current/refseq.tax.json  #{RDF_DIR}/togogenome/uniprot/current/refseq"
+    sh "bin/get_uniprot_rdf.rb #{RDF_DIR}/uniprot/current/refseq.tax.json  #{RDF_DIR}/uniprot/current/refseq"
   end
 
   desc "Copy UniProt subset(mapped to RefSeq) for TogoGenome"
   task :copy do
-    sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/togogenome/uniprot/current/refseq.tax.json #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/togogenome/uniprot/current/refseq"
+    sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/uniprot/current/refseq.tax.json #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/uniprot/current/refseq"
   end
 
   desc "Load UniProt to TogoGenome"
@@ -732,19 +734,19 @@ namespace :uniprot do
     name = set_name
     load_dir("#{RDF_DIR}/uniprot/current/uniprot_unzip", '*.owl', 'uniprot', name)
     load_dir("#{RDF_DIR}/uniprot/current/uniprot_unzip", '*.rdf', 'uniprot', name)
-    load_dir_multiple("#{RDF_DIR}/togogenome/uniprot/current/refseq", '*.rdf.gz', 'uniprot', name, 6)
+    load_dir_multiple("#{RDF_DIR}/uniprot/current/refseq", '*.rdf.gz', 'uniprot', name, 6)
     update_graph('uniprot', name)
   end
 
   desc "Generate UniProt stats turtle"
   task :uniprot2stats do
-    sh "bin/uniprot_pfam_stats.rb \"#{ISQL}\" #{RDF_DIR}/togogenome/uniprot/current/pfam_stats"
+    sh "bin/uniprot_pfam_stats.rb \"#{ISQL}\" #{RDF_DIR}/uniprot/current/pfam_stats"
   end
 
   desc "Load RefSeq statistics to TogoGenome"
   task :load_stats do
     name = set_name
-    load_dir("#{RDF_DIR}/togogenome/uniprot/current/pfam_stats", '*.ttl', 'stats', name)
+    load_dir("#{RDF_DIR}/uniprot/current/pfam_stats", '*.ttl', 'stats', name)
   end
 
 end
@@ -787,20 +789,20 @@ namespace :linkage do
 
   desc "Prepare RDF for tracking directly the descendants of each MEO object"
   task :meo_descendants do
-    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/meo_descendants.rq > #{RDF_DIR}/togogenome/ontology/MEO/current/meo_descendants.ttl"
+    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/meo_descendants.rq > #{RDF_DIR}/ontology/MEO/current/meo_descendants.ttl"
   end
 
   desc "Prepare RDF for tracking directly the descendants of each MPO object"
   task :mpo_descendants do
-    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/mpo_descendants.rq > #{RDF_DIR}/togogenome/ontology/MPO/current/mpo_descendants.ttl"
+    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/mpo_descendants.rq > #{RDF_DIR}/ontology/MPO/current/mpo_descendants.ttl"
   end
   desc "Prepare RDF for linking directly between the gene_ontology and uniprot entries"
   task :goup do
-    sh "bin/go_up2ttl.rb #{ENDPOINT} \"#{ISQL}\" #{RDF_DIR}/togogenome/uniprot/current/goup"
+    sh "bin/go_up2ttl.rb #{ENDPOINT} \"#{ISQL}\" #{RDF_DIR}/uniprot/current/goup"
   end
   desc "Prepare RDF for linking directly between the gene_ontology and taxonomy"
   task :gotax do
-    sh "bin/go_tax2ttl.rb #{ENDPOINT} \"#{ISQL}\" #{RDF_DIR}/togogenome/uniprot/current/gotax"
+    sh "bin/go_tax2ttl.rb #{ENDPOINT} \"#{ISQL}\" #{RDF_DIR}/uniprot/current/gotax"
   end
   desc "Prepare RDF of TogoGenome taxonomy to parent taxonomy mappings"
   task :tgtax do
@@ -819,28 +821,28 @@ namespace :linkage do
   desc "Load MEO descendants to TogoGenome"
   task :load_meo_descendants do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/MEO/current/meo_descendants.ttl", 'meo_descendants', name)
+    load_ttl("#{RDF_DIR}/ontology/MEO/current/meo_descendants.ttl", 'meo_descendants', name)
     update_graph('meo_descendants', name)
   end
 
   desc "Load MPO descendants to TogoGenome"
   task :load_mpo_descendants do
     name = set_name
-    load_ttl("#{RDF_DIR}/togogenome/ontology/MPO/current/mpo_descendants.ttl", 'mpo_descendants', name)
+    load_ttl("#{RDF_DIR}/ontology/MPO/current/mpo_descendants.ttl", 'mpo_descendants', name)
     update_graph('mpo_descendants', name)
   end
 
   desc "Load linkage between gene ontology and uniprot RDF to TogoGenome"
   task :load_goup do
     name = set_name
-    load_dir("#{RDF_DIR}/togogenome/uniprot/current/goup", '*.ttl', 'goup', name)
+    load_dir("#{RDF_DIR}/uniprot/current/goup", '*.ttl', 'goup', name)
     update_graph('goup', name)
   end
 
   desc "Load linkage between gene ontology and taxonomy RDF to TogoGenome"
   task :load_gotax do
     name = set_name
-    load_dir("#{RDF_DIR}/togogenome/uniprot/current/gotax", '*.ttl', 'gotax', name)
+    load_dir("#{RDF_DIR}/uniprot/current/gotax", '*.ttl', 'gotax', name)
     update_graph('gotax', name)
   end
 
@@ -869,8 +871,8 @@ namespace :text_search do
   desc "Update data for text search"
   task :update do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/togogenome/text_search", name)
-    link_current("#{RDF_DIR}/togogenome/text_search", name)
+    path = create_subdir("#{RDF_DIR}/text_search", name)
+    link_current("#{RDF_DIR}/text_search", name)
     sh "bin/text_search/update_text_index.sh"
   end
 end
