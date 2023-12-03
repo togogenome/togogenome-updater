@@ -6,8 +6,11 @@ RUN apt-get update && \
 
 # throw errors if Gemfile has been modified since Gemfile.lock
 RUN bundle config --global frozen 1
-
 WORKDIR /updater
-
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
+
+# if generate or update Gemfile.lock
+#WORKDIR /updater
+#COPY Gemfile ./
+#RUN bundle install

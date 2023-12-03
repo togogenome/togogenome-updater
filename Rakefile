@@ -157,7 +157,7 @@ def load_rdf(path, graph, name)
     isql_write(file, "DB.DBA.RDF_LOAD_RDFXML_MT(file_to_string_output('#{path}'), '', '#{GRAPH_NS}/graph/#{graph}');")
     isql_write(file, "checkpoint;")
   end
-  sh "#{ISQL} #{isql}"
+  sh "#{DOCKER_VIRTUOSO} sh #{isql}"
 end
 
 def load_ttl(path, graph, name)
@@ -623,8 +623,6 @@ namespace :refseq do
     link_current("#{RDF_DIR}/refseq", name)
     sh "bin/refseq_list.rb #{ENDPOINT} > #{REFSEQ_WORK_DIR}/refseq_list.json"
     sh "bin/wget_refseq.rb #{REFSEQ_WORK_DIR}/refseq_list.json #{REFSEQ_WORK_DIR}/refseq.gb true >> #{REFSEQ_WORK_DIR}/refseq_wget.log"
-    #delete error data
-    sh "perl -pi -e 's/; GO//g' #{REFSEQ_WORK_DIR}/refseq.gb/1883368/PRJNA353681/NC_031927.1"
   end
   
   desc "Convert RefSeq to Turtle"
@@ -639,7 +637,7 @@ namespace :refseq do
   
   desc "Prepare JBrowse conf files"
   task :refseq2jbrowse do
-    sh "cp -pr #{RDF_DIR}/refseq/jbrowse_blank #{RDF_DIR}/refseq/current/jbrowse_upd"
+    sh "cp -pr #{RDF_DIR}/refseq/jbrowse_blank #{REFSEQ_WORK_DIR}/jbrowse_upd"
     sh "bin/refseq2jbrowse.rb #{REFSEQ_WORK_DIR}"
     sh "if [ -f #{REFSEQ_WORK_DIR}/jbrowse ]; then mv #{REFSEQ_WORK_DIR}/jbrowse #{REFSEQ_WORK_DIR}/jbrowse_old; fi"
     sh "mv #{REFSEQ_WORK_DIR}/jbrowse_upd #{REFSEQ_WORK_DIR}/jbrowse"
@@ -656,7 +654,7 @@ namespace :refseq do
   desc "Load Refseq to TogoGenome"
   task :load_refseq do
     name = set_name
-    load_dir_multiple("#{REFSEQ_WORK_DIR}/refseq.ttl", '*.ttl', 'refseq', name, 4)
+    load_dir_multiple("#{REFSEQ_WORK_DIR}/refseq.ttl", '*.ttl', 'refseq', name, 6)
     update_graph('refseq', name)
   end
 

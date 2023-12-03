@@ -8,15 +8,16 @@ work_dir = ARGV.shift
 input_dir = "#{work_dir}/refseq.gb"
 output_dir = "#{work_dir}/refseq.ttl"
 output_all = "#{work_dir}/all.turtle"
-refseq2ttl = "bin/rdfsummit/insdc2ttl/insdc2ttl.rb"
+refseq2ttl = "/rdfsummit/insdc2ttl/insdc2ttl.rb"
 
+# 全件turtleの出力
 system(%Q[ruby #{refseq2ttl} -p > #{output_all}])
-
 
 refseq_list = open("#{work_dir}/refseq_list.json") do |io|
   JSON.load(io)
 end
 
+# 各GenBankファイルをturtleに変換
 Parallel.each(refseq_list, in_processes: 4) do |entry|
   tax_id = entry['tax_id']
   prj_id = entry['bioproject_id']
@@ -35,6 +36,5 @@ Parallel.each(refseq_list, in_processes: 4) do |entry|
     $stderr.puts ">>> #{output_file}"
     puts "convert file #{seq_id} ..."
     system(%Q[ruby #{refseq2ttl} -d RefSeq -t "#{molecule_name}" #{input_file} > #{output_file}])
-#    system(%Q[grep -v '^@prefix' #{output_file} >> #{output_all}])
   end
 end

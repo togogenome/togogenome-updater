@@ -9,6 +9,7 @@ WHERE
   {
     SELECT
       (COUNT(DISTINCT ?gene) AS ?num_gene)
+      (COUNT(DISTINCT ?coding_gene) AS ?num_coding_gene)
       (COUNT(DISTINCT ?pseudogene) AS ?num_pseudogene)
       (COUNT(DISTINCT ?rrna) AS ?num_rrna)
       (COUNT(DISTINCT ?trna) AS ?num_trna)
@@ -25,6 +26,14 @@ WHERE
       {
         ?gene a ?type FILTER(?type = insdc:Gene && ?gene = ?feature)
         MINUS { ?gene insdc:pseudo true . }
+      }
+      UNION
+      {
+        ?coding_gene a ?type FILTER(?type = insdc:Gene && ?coding_gene = ?feature)
+        ?cds obo:so_part_of ?coding_gene ;
+          a insdc:Coding_Sequence ;
+          insdc:translation ?translation .
+        MINUS { ?coding_gene insdc:pseudo true . }
       }
       UNION
       {

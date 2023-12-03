@@ -29,10 +29,10 @@ class RefseqStats
 
 #      next unless taxid == "243274" #delete
 
-      stats[taxid] ||= {:seq_length => 0, :gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :assids => {}}
-      stats[taxid][assid] ||= {:seq_length => 0, :gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :bpids => {}}
-      stats[taxid][assid][bpid] ||= {:seq_length => 0, :gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :rsids => {} }
-      stats[taxid][assid][bpid][rsid] ||= {:seq_length => 0, :gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0 }
+      stats[taxid] ||= {:seq_length => 0, :gene => 0, :coding_gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :assids => {}}
+      stats[taxid][assid] ||= {:seq_length => 0, :gene => 0, :coding_gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :bpids => {}}
+      stats[taxid][assid][bpid] ||= {:seq_length => 0, :gene => 0, :coding_gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0, :rsids => {} }
+      stats[taxid][assid][bpid][rsid] ||= {:seq_length => 0, :gene => 0, :coding_gene => 0, :pseudogene => 0, :trna => 0, :rrna => 0, :mrna => 0, :cds => 0, :exon => 0, :ncrna => 0, :other => 0 }
 
       # for having uniq key of assid, bpid, rsid
       # ex stats["1148"][:assids] => {"GCF_000270265.1"=>true, "GCF_000340785.1"=>true, "GCF_000009725.1"=>true}
@@ -64,6 +64,7 @@ class RefseqStats
       result_cnt.each do |refseq_stats|
         stats[taxid][assid][bpid][rsid][:seq_length] = refseq_stats['seq_length']['value'].to_i
         stats[taxid][assid][bpid][rsid][:gene] = refseq_stats['num_gene']['value'].to_i
+        stats[taxid][assid][bpid][rsid][:coding_gene] = refseq_stats['num_coding_gene']['value'].to_i
         stats[taxid][assid][bpid][rsid][:pseudogene] = refseq_stats['num_pseudogene']['value'].to_i
         stats[taxid][assid][bpid][rsid][:trna] = refseq_stats['num_trna']['value'].to_i
         stats[taxid][assid][bpid][rsid][:rrna] = refseq_stats['num_rrna']['value'].to_i
@@ -148,6 +149,7 @@ class RefseqStats
   def add_num_feature (org, add)
     org[:seq_length] += add[:seq_length]
     org[:gene] += add[:gene]
+    org[:coding_gene] += add[:coding_gene]
     org[:pseudogene] += add[:pseudogene]
     org[:trna] += add[:trna]
     org[:rrna] += add[:rrna]
@@ -161,6 +163,7 @@ class RefseqStats
   def output_feature_triples(file_writer, resource_type, resource_id, feature_stats)
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:sequence_length", feature_stats[:seq_length])
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:gene", feature_stats[:gene])
+    file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:coding_gene", feature_stats[:coding_gene])
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:pseudogene", feature_stats[:pseudogene])
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:trna", feature_stats[:trna])
     file_writer.puts triple("<http://identifiers.org/#{resource_type}/#{resource_id}>", "stats:rrna", feature_stats[:rrna])

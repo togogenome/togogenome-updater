@@ -1,11 +1,19 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    bio (2.0.5)
+    parallel (1.23.0)
+    securerandom (0.3.0)
+    systemu (2.6.5)
 
 PLATFORMS
-  x86_64-linux
+  ruby
 
 DEPENDENCIES
+  bio
+  parallel
+  securerandom
+  systemu
 
 BUNDLED WITH
-   2.4.10
+   2.1.4

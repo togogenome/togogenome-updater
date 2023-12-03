@@ -10,9 +10,9 @@ require 'erb'
 endpoint = SPARQL.new(ARGV.shift)
 result_list = []
 query_kingdom_list = [
-  {tax_id: "2", type_material: "AND (?relation_to_type_material  != '')"},
-  {tax_id: "2157", type_material: "AND (?relation_to_type_material  != '')"},
-  {tax_id: "10239", type_material: "AND (?relation_to_type_material  != '')"},
+  {tax_id: "2", type_material: "AND (?relation_to_type_material  != 'na')"},
+  {tax_id: "2157", type_material: "AND (?relation_to_type_material  != 'na')"},
+  {tax_id: "10239", type_material: "AND (?relation_to_type_material  != 'na')"},
   {tax_id: "2759", type_material: ""},
 ]
 query_kingdom_list.each do |kingdom|
