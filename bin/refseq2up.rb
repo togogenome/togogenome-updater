@@ -14,7 +14,7 @@ require 'json'
 require 'erb'
 require 'fileutils'
 require 'securerandom'
-require "/data/store/rdf/togogenome/bin/sparql.rb"
+require "./#{@base_dir}/sparql.rb"
 
 
 def triple(s, p, o)

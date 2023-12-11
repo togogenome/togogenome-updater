@@ -14,7 +14,7 @@ HTTP_GET = "lftpget"
 ###
 
 ISQL = "/opt/virtuoso-opensource/bin/isql 1111 dba dba"
-DOCKER_VIRTUOSO = "docker exec togogenome_updater_virtuoso"
+DOCKER_VIRTUOSO = "docker exec -i togogenome_updater_virtuoso"
 ENDPOINT = "http://virtuoso:8890/sparql"
 
 USAGE = <<"USAGE"
@@ -83,12 +83,6 @@ rake ontology:brc:load 20130925         # Load BRC to TogoGenome
 rake ontology:nbrc:load 20200229        # Load NBRC to TogoGenome
 rake ontology:jcm:load 20200229         # Load JCM to TogoGenome
 rake ontology:gold:load 20130827        # Load GOLD to TogoGenome
-
-* Update EdgeStore
-
-rake edgestore:check           # Check update status
-rake edgestore:fetch           # Retrieve EdgeStore data
-rake edgestore:load 20131021   # Load EdgeStore to TogoGenome
 
 * linkage(facet serach data)
 
@@ -674,6 +668,7 @@ end
 ###
 
 namespace :uniprot do
+  UNIPROT_WORK_DIR = "#{RDF_DIR}/uniprot/current"
 
   desc "Retrieve UniProt RDF in ../uniprot/current"
   task :fetch do
@@ -685,96 +680,65 @@ namespace :uniprot do
   end
 
   task :unzip do
-    path = "#{RDF_DIR}/uniprot/current"
-    sh "xz -dv #{path}/rdf/*.xz"
-  end
-
-  task :remove_unzip do
-    sh "rm -rf #{RDF_DIR}/uniprot/current/uniprot_unzip/uniprotkb"
-  end
-
-  desc "Convert UniProt taxon RDF to Turtle"
-  task :taxon2ttl do
-    path = "#{RDF_DIR}/uniprot/current"
-    sh "#{SCRIPT_DIR}/uniprot_rdf2ttl.rb #{path}/refseq #{path}/refseq_ttl &>> #{path}/rapper_ttl.log"
+    sh "xz -dv #{UNIPROT_WORK_DIR}/rdf/*.xz"
+    sh "gunzip #{UNIPROT_WORK_DIR}/idmapping.dat.gz"
   end
 
   desc "Link TogoGenome and UniProt by /protein_id extracted from RefSeq"
   task :refseq2up do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/uniprot", name)
-    link_current("#{RDF_DIR}/uniprot", name)
     # Generate refseq.up.ttl
-    path = "#{RDF_DIR}/uniprot/current"
-    sh "grep 'RefSeq\\|NCBI_TaxID\\|GeneID' #{RDF_DIR}/uniprot/current/uniprot_unzip/idmapping.dat | grep -v 'RefSeq_NT' > #{path}/filterd_idmapping.dat"
-    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{path}/refseq.up.ttl #{path}/filterd_idmapping.dat 2> #{path}/refseq.up.log"
+    sh "grep 'RefSeq\\|NCBI_TaxID\\|GeneID' #{UNIPROT_WORK_DIR}/idmapping.dat | grep -v 'RefSeq_NT' > #{UNIPROT_WORK_DIR}/filterd_idmapping.dat"
+    sh "bin/refseq2up.rb #{ENDPOINT} #{REFSEQ_WORK_DIR}/refseq_list.json #{UNIPROT_WORK_DIR}/refseq.up.ttl #{UNIPROT_WORK_DIR}/filterd_idmapping.dat 2> #{UNIPROT_WORK_DIR}/refseq.up.log"
   end
 
   desc "Load TogoGenome to UniProt mappings"
   task :load_tgup do
     name = set_name
-    load_ttl("#{RDF_DIR}/uniprot/current/refseq.up.ttl", 'tgup', name)
+    load_ttl("#{UNIPROT_WORK_DIR}/refseq.up.ttl", 'tgup', name)
     update_graph('tgup', name)
   end
 
   desc "Download UniProt rdf (by tax_ids) for TogoGenome"
   task :download_rdf do
-    sh "bin/get_uniprot_rdf.rb #{RDF_DIR}/uniprot/current/refseq.tax.json  #{RDF_DIR}/uniprot/current/refseq"
+    sh "bin/get_uniprot_rdf.rb #{UNIPROT_WORK_DIR}/refseq.tax.json  #{UNIPROT_WORK_DIR}/refseq"
   end
 
-  desc "Copy UniProt subset(mapped to RefSeq) for TogoGenome"
-  task :copy do
-    sh "bin/copy_uniprot_refseq.rb #{RDF_DIR}/uniprot/current/refseq.tax.json #{RDF_DIR}/uniprot/current/uniprot_taxon.rdf  #{RDF_DIR}/uniprot/current/refseq"
+  desc "Download All UniProtKB and split by tax_ids (Run when download_rdf API stops working)"
+  task :split_by_tax do
+    uniprotkb_path = create_subdir(UNIPROT_WORK_DIR, "uniprotkb")
+    sh "cd #{uniprotkb_path} ; echo 'mirror -I uniprotkb_*' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/rdf"
+    sh "xz -dv #{UNIPROT_WORK_DIR}/uniprotkb/*.xz"
+    uniprotkb_path = create_subdir(UNIPROT_WORK_DIR, "taxon")
+    sh "#{SCRIPT_DIR}/uniprot_taxon.rb #{UNIPROT_WORK_DIR}/uniprotkb /updater/taxon #{UNIPROT_WORK_DIR}/refseq.tax.json >> #{UNIPROT_WORK_DIR}/taxon_split.log"
   end
 
   desc "Load UniProt to TogoGenome"
   task :load do
     name = set_name
-    load_dir("#{RDF_DIR}/uniprot/current/uniprot_unzip", '*.owl', 'uniprot', name)
-    load_dir("#{RDF_DIR}/uniprot/current/uniprot_unzip", '*.rdf', 'uniprot', name)
-    load_dir_multiple("#{RDF_DIR}/uniprot/current/refseq", '*.rdf.gz', 'uniprot', name, 6)
+    load_dir("#{UNIPROT_WORK_DIR}/rdf", '*.owl', 'uniprot', name)
+    load_dir("#{UNIPROT_WORK_DIR}/rdf", '*.rdf', 'uniprot', name)
+    load_dir_multiple("#{UNIPROT_WORK_DIR}/refseq", '*.rdf.gz', 'uniprot', name, 6)
     update_graph('uniprot', name)
   end
 
   desc "Generate UniProt stats turtle"
   task :uniprot2stats do
-    sh "bin/uniprot_pfam_stats.rb \"#{ISQL}\" #{RDF_DIR}/uniprot/current/pfam_stats"
+    sh "bin/uniprot_pfam_stats.rb '#{DOCKER_VIRTUOSO} #{ISQL}' #{UNIPROT_WORK_DIR}/pfam_stats"
   end
 
   desc "Load RefSeq statistics to TogoGenome"
   task :load_stats do
     name = set_name
-    load_dir("#{RDF_DIR}/uniprot/current/pfam_stats", '*.ttl', 'stats', name)
+    load_dir("#{UNIPROT_WORK_DIR}/pfam_stats", '*.ttl', 'stats', name)
   end
 
-end
-
-###
-### EdgeStore
-###
-
-namespace :edgestore do
-  desc "Check EdgeStore data"
-  task :check do
-    sh "ssh w3sw@gw.ddbj.nig.ac.jp tail /home/w3sw/rdf/log/edgestore.log"
+  desc "Convert UniProt taxon RDF to Turtle"
+  task :taxon2ttl do
+    # TODO rapper コンテナ作成が必要
+    sh "#{SCRIPT_DIR}/uniprot_rdf2ttl.rb #{UNIPROT_WORK_DIR}/refseq #{UNIPROT_WORK_DIR}/refseq_ttl &>> #{UNIPROT_WORK_DIR}/rapper_ttl.log"
   end
 
-  desc "Retrieve EdgeStore data"
-  task :fetch do
-    name = set_name
-    path = create_subdir("#{RDF_DIR}/edgestore", name)
-    sh "scp -pr w3sw@gw.ddbj.nig.ac.jp:/home/w3sw/rdf/log/edgestore.log #{RDF_DIR}/edgestore/"
-    sh "scp -pr w3sw@gw.ddbj.nig.ac.jp:/home/w3sw/rdf/edgestore/\*.ttl #{path}"
-    sh "rm -f #{path}/togogenome2uniprot.ttl"
-    link_current("#{RDF_DIR}/edgestore", name)
-  end
-
-  desc "Load EdgeStore to TogoGenome"
-  task :load do
-    name = set_name
-    load_dir("#{RDF_DIR}/edgestore/current", '*.ttl', 'edgestore', name)
-    update_graph('edgestore', name)
-  end
 end
 
 ###
@@ -796,25 +760,20 @@ namespace :linkage do
   end
   desc "Prepare RDF for linking directly between the gene_ontology and uniprot entries"
   task :goup do
-    sh "bin/go_up2ttl.rb #{ENDPOINT} \"#{ISQL}\" #{RDF_DIR}/uniprot/current/goup"
+    sh "bin/go_up2ttl.rb '#{DOCKER_VIRTUOSO} #{ISQL}' #{UNIPROT_WORK_DIR}/goup"
   end
   desc "Prepare RDF for linking directly between the gene_ontology and taxonomy"
   task :gotax do
-    sh "bin/go_tax2ttl.rb #{ENDPOINT} \"#{ISQL}\" #{RDF_DIR}/uniprot/current/gotax"
+    sh "bin/go_tax2ttl.rb '#{DOCKER_VIRTUOSO} #{ISQL}' #{UNIPROT_WORK_DIR}/gotax"
   end
   desc "Prepare RDF of TogoGenome taxonomy to parent taxonomy mappings"
   task :tgtax do
-    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/tgtax_refseq.rq > #{REFSEQ_WORK_DIR}/refseq.tgtax.ttl"
-    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/tgtax_environment.rq > #{REFSEQ_WORK_DIR}/environment.tgtax.ttl"
-    sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/tgtax_phenotype.rq > #{REFSEQ_WORK_DIR}/phenotype.tgtax.ttl"
+    sh "bin/tg_tax2ttl.rb '#{DOCKER_VIRTUOSO} #{ISQL}' #{REFSEQ_WORK_DIR}/"
   end
   desc "Prepare RDF of in-use taxonomy tree"
   task :taxonomy_lite do
     sh "bin/sparql_construct.rb #{ENDPOINT} bin/sparql/taxonomy_lite.rq > #{REFSEQ_WORK_DIR}/taxonomy_lite.ttl"
   end
-
-  desc "Load linkage RDF to TogoGenome"
-  task :load => [:load_meo_descendants, :load_mpo_descendants, :load_goup, :load_gotax, :load_tgtax, :load_taxonomy_lite]
 
   desc "Load MEO descendants to TogoGenome"
   task :load_meo_descendants do
@@ -833,14 +792,14 @@ namespace :linkage do
   desc "Load linkage between gene ontology and uniprot RDF to TogoGenome"
   task :load_goup do
     name = set_name
-    load_dir("#{RDF_DIR}/uniprot/current/goup", '*.ttl', 'goup', name)
+    load_dir("#{UNIPROT_WORK_DIR}/goup", '*.ttl', 'goup', name)
     update_graph('goup', name)
   end
 
   desc "Load linkage between gene ontology and taxonomy RDF to TogoGenome"
   task :load_gotax do
     name = set_name
-    load_dir("#{RDF_DIR}/uniprot/current/gotax", '*.ttl', 'gotax', name)
+    load_dir("#{UNIPROT_WORK_DIR}/gotax", '*.ttl', 'gotax', name)
     update_graph('gotax', name)
   end
 
@@ -871,6 +830,9 @@ namespace :text_search do
     name = set_name
     path = create_subdir("#{RDF_DIR}/text_search", name)
     link_current("#{RDF_DIR}/text_search", name)
-    sh "bin/text_search/update_text_index.sh"
+    # ここでvirtuoso止めてdbファイルのコピー作成して起動
+    # create indexとloadを分ける
+    # sh "bin/text_search/update_text_index.sh"
+    # ここでvirtuoso止めてdbファイルのコピーを復帰して
   end
 end

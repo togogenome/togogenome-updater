@@ -30,6 +30,7 @@ services:
       VIRT_Client_SQL_PREFETCH_ROWS: 10000
       VIRT_Client_SQL_PREFETCH_BYTES: 1600000
       VIRT_SPARQL_ResultSetMaxRows: 1000000
+      VIRT_SPARQL_MaxConstructTriples: 1000000
       VIRT_SPARQL_MaxQueryCostEstimationTime: 0
       VIRT_SPARQL_MaxQueryExecutionTime: 600
       VIRT_SPARQL_MaxSortedTopRows: 200000

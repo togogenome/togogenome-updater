@@ -2,11 +2,10 @@
 
 base_dir = File.dirname(__FILE__)
 
-require "./#{base_dir}/sparql.rb"
+require "./#{base_dir}/sparql_isql.rb"
 require 'json'
 require 'erb'
 require 'fileutils'
-require 'tempfile'
 
 class UniProtPfamStats
 
@@ -20,7 +19,7 @@ class UniProtPfamStats
 # desc 'get_all_pfam_list', 'UniProtで出現する全てのPfamIDを取得する'
   def get_all_pfam_list
     sparql = File.read("#{@base_dir}/sparql/get_all_pfam_id.rq")
-    result = isql_query(sparql)
+    result = SparqlIsql.isql_query(@isql_cmd, sparql)
     pfam_list = []
     format_tsv(result).split("\n").each do |row|
       pfam_list.push(row.chomp.split("/").last)
@@ -36,8 +35,8 @@ class UniProtPfamStats
   def output_pfam_info(pfam_id)
     puts pfam_id
     template = File.read("#{@base_dir}/sparql/get_pfam_info.erb")
-    sparql   = ERB.new(template).result(binding)
-    result = isql_query(sparql)
+    sparql = ERB.new(template).result(binding)
+    result = SparqlIsql.isql_query(@isql_cmd, sparql)
     output_ttl(pfam_id, format_tsv(result))
   end
 
@@ -80,24 +79,6 @@ class UniProtPfamStats
     output_file.close
   end
 
-  def isql_query(sparql, output_path = nil)
-    sparql_path = Tempfile.open('sparql_file') {|fp|
-      fp.puts "SPARQL"
-      fp.puts sparql
-      fp.puts ";"
-      fp.path
-    }
-
-    if output_path
-      system(%Q[#{@isql_cmd} < #{sparql_path} > #{output_path}])
-    else
-      output_tmp = Tempfile.open('output')
-      system(%Q[#{@isql_cmd} < #{sparql_path} > #{output_tmp.path}])
-      result = output_tmp.read
-      output_tmp.close!
-      result
-    end
-  end
 
 # desc 'format_tsv', 'SPARQLの結果をTSV形式に変換'
   def format_tsv(str)
