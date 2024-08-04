@@ -1,4 +1,3 @@
-SPARQL
 PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
 
 SELECT ?tax_id ("^@" AS ?delimit1)
@@ -18,4 +17,3 @@ WHERE
     ?tax_id  tax:scientificName ?scientific_name .
   }
 } GROUP BY ?tax_id
-;

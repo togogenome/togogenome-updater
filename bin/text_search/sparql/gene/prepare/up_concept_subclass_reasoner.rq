@@ -2,17 +2,13 @@ DEFINE sql:select-option "order"
 PREFIX up: <http://purl.uniprot.org/core/>
 PREFIX up_key: <http://purl.uniprot.org/keywords/>
 
-CONSTRUCT
-{
-  ?concept rdfs:subClassOf ?root_concept
-}
+
+SELECT ?concept ?root_concept
+FROM <http://togogenome.org/graph/uniprot>
 WHERE
 {
-  GRAPH <http://togogenome.org/graph/uniprot>
-  {
-    VALUES ?root_concept {up_key:9990 up_key:9992 up_key:9993 up_key:9994 up_key:9998 up_key:9999}
-    ?root_concept rdf:type up:Concept .
-    ?concept rdfs:subClassOf* ?root_concept .
-    ?concept rdf:type up:Concept .
-  }
+  VALUES ?root_concept {up_key:9990 up_key:9992 up_key:9993 up_key:9994 up_key:9998 up_key:9999}
+  ?root_concept rdf:type up:Concept .
+  ?concept rdfs:subClassOf* ?root_concept .
+  ?concept rdf:type up:Concept .
 }

@@ -828,11 +828,11 @@ namespace :text_search do
   desc "Update data for text search"
   task :update do
     name = set_name
-    path = create_subdir("#{RDF_DIR}/text_search", name)
-    link_current("#{RDF_DIR}/text_search", name)
+    #path = create_subdir("#{RDF_DIR}/text_search", name)
+    #link_current("#{RDF_DIR}/text_search", name)
     # ここでvirtuoso止めてdbファイルのコピー作成して起動
     # create indexとloadを分ける
-    # sh "bin/text_search/update_text_index.sh"
+    sh "bin/text_search/update_text_index.sh"
     # ここでvirtuoso止めてdbファイルのコピーを復帰して
   end
 end

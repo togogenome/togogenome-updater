@@ -1,4 +1,3 @@
-SPARQL
 DEFINE sql:select-option "order"
 PREFIX obo: <http://purl.obolibrary.org/obo/>
 PREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>
@@ -34,4 +33,3 @@ SELECT ?togo_gene ("^@" AS ?delimit1)
     OPTIONAL { ?feature_uri insdc:locus_tag ?locus_tag }
   }
 } GROUP BY ?togo_gene
-;

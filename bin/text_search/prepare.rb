@@ -3,20 +3,20 @@
 require 'json'
 require 'fileutils'
 require 'tempfile'
-#require "../sparql.rb"
+require 'erb'
+require "#{File.expand_path("..", __FILE__)}/./base.rb"
 
 class TextSearchGenePrepare
 
-ISQL = "/data/store/virtuoso7.1/bin/isql 20711 dba dba"
-ENDPOINT = "http://ep.dbcls.jp/sparql-import"
+  DOCKER_VIRTUOSO = "docker exec -i togogenome_updater_virtuoso"
+  ISQL = "/opt/virtuoso-opensource/bin/isql 1111 dba dba"
 
   def initialize()
- #   @endpoint = SPARQL.new(endpoint)
     @isql_cmd = "#{ISQL}" + ' VERBOSE=OFF BANNER=OFF PROMPT=OFF ECHO=OFF BLOBS=ON ERRORS=stdout'
-    @sparql_construct ="/data/store/rdf/togogenome/bin/sparql_construct.rb" 
-    @base_dir = "/data/store/rdf/togogenome/bin/text_search"
+    @base_dir = File.expand_path("..", __FILE__)
+    @sparql_construct ="#{@base_dir}/../bin/sparql_construct.rb" 
     @query_dir = "#{@base_dir}/sparql/gene/prepare" 
-    @output_dir = "/data/store/rdf/togogenome/text_search/current/prepare"
+    @output_dir = "/data/text_search/current/prepare"
     @gene_ttl_path = "#{@output_dir}/gene_in_facet.ttl"
     @protein_ttl_path = "#{@output_dir}/protein_in_facet.ttl"
     @tax_id_json_path = "#{@output_dir}/gene/json/tax_id_list.json"
@@ -25,21 +25,13 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
     @upgo_reasoner_ttl_path = "#{@output_dir}/up_ontologies_upgo_reasoner.ttl"
     FileUtils.mkdir_p("#{@output_dir}")
     FileUtils.mkdir_p("#{@output_dir}/gene/json")
+    @text_search_base = TextSearchBase.new
   end
 
   def triple(s, p, o)
     return [s, p, o].join("\t") + " ."
   end
 
-  def load_ttl(path, graph)
-    isql_path = Tempfile.open('isql_file') {|fp|
-      fp.puts "log_enable(2, 1);"
-      fp.puts "DB.DBA.TTLP_MT(file_to_string_output('#{path}'), '', '#{graph}', 81);"
-      fp.puts "checkpoint;"
-      fp.path
-    }
-    system(%Q[#{ISQL} < #{isql_path}])
-  end
 
   def create_gene_in_facet_ttl()
     File.delete("#{@gene_ttl_path}") if File.exist?("#{@gene_ttl_path}")
@@ -49,7 +41,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
     end
 
     sparql = File.read("#{@query_dir}/create_gene_in_facet_list.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     File.open("#{@gene_ttl_path}", 'a') do |file|
       result.lines do |line|
         tg_ref = line.split('^@')
@@ -59,7 +51,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
   end
 
   def load_gene_in_facet_ttl()
-    load_ttl("#{@gene_ttl_path}", "http://togogenome.org/graph/text_search/gene_list")
+    @text_search_base.load_ttl("#{@gene_ttl_path}", "http://togogenome.org/graph/text_search/gene_list")
   end
 
   def create_protein_in_facet_ttl()
@@ -71,7 +63,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
     end
 
     sparql = File.read("#{@query_dir}/create_protein_in_facet_list.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     File.open("#{@protein_ttl_path}", 'a') do |file|
       result.lines do |line|
         file.puts triple("<#{line.chomp}>", "rdf:type", "up:Protein");
@@ -80,12 +72,12 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
   end
 
   def load_protein_in_facet_ttl()
-    load_ttl("#{@protein_ttl_path}", "http://togogenome.org/graph/text_search/protein_list")
+    @text_search_base.load_ttl("#{@protein_ttl_path}", "http://togogenome.org/graph/text_search/protein_list")
   end
 
   def create_tax_id_json()
     sparql = File.read("#{@query_dir}/create_tax_id_list.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     result_array = []
     result.lines do |line|
       result_array.push(line.chomp.strip)
@@ -97,7 +89,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
 
   def create_protein_gene_json()
     sparql = File.read("#{@query_dir}/create_protein_gene_list.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     result_hash = {}
     result.lines do |line|
       split_line = line.split('^@')
@@ -112,7 +104,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
 
   def create_protein_gene_ttl()
     sparql = File.read("#{@query_dir}/create_protein_gene_mapping.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     file = File.open("#{@protein_gene_ttl_path}", 'w')
     result.lines do |line|
       split_line = line.split('^@')
@@ -123,19 +115,67 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
   end
 
   def protein_gene_ttl()
-    load_ttl("#{@protein_gene_ttl_path}", "http://togogenome.org/graph/text_search/protein_gene")
+    @text_search_base.load_ttl("#{@protein_gene_ttl_path}", "http://togogenome.org/graph/text_search/protein_gene")
   end
 
   def create_up_reasoner()
-    system(%Q[#{@sparql_construct} #{ENDPOINT} #{@query_dir}/up_concept_subclass_reasoner.rq > #{@output_dir}/up_concept_subclass_reasoner.ttl])
-    system(%Q[#{@sparql_construct} #{ENDPOINT} #{@query_dir}/up_tax_subclass_reasoner.rq > #{@output_dir}/up_tax_subclass_reasoner.ttl])
-    system(%Q[#{@sparql_construct} #{ENDPOINT} #{@query_dir}/up_anno_subclass_reasoner.rq > #{@output_dir}/up_anno_subclass_reasoner.ttl])
+    create_subclassof_reasoner("#{@output_dir}/up_concept_subclass_reasoner.ttl", "#{@query_dir}/up_concept_subclass_reasoner.rq")
+    create_subclassof_reasoner("#{@output_dir}/up_anno_subclass_reasoner.ttl", "#{@query_dir}/up_anno_subclass_reasoner.rq")
+  end
+
+  # 指定したクエリで取得した2カラムの値を rdfs:subClassOfで繋げたttlファイルを出力すr 
+  # <http://purl.uniprot.org/keywords/1>    rdfs:subClassOf <http://purl.uniprot.org/keywords/9993> .
+  def create_subclassof_reasoner(output_file, query_file)
+    File.delete(output_file) if File.exist?(output_file)
+    File.open(output_file, 'w') do |file|
+      file.puts triple("@prefix", "rdfs:", "<http://www.w3.org/2000/01/rdf-schema#>")
+      file.puts ""
+    end
+
+    sparql = File.read(query_file)
+    result = @text_search_base.isql_query(sparql)
+    File.open(output_file, 'a') do |file|
+      result.lines do |line|
+        columns = line.chomp.split(" ")
+        if columns[0].nil? || !columns[0].start_with?("http")
+          p line.chomp
+          next
+        end
+        file.puts triple("<#{columns[0]}>", "rdfs:subClassOf", "<#{columns[1]}>");
+      end
+    end
+  end
+
+  # up taxのsubClassOfは一回のクエリでは取れなくなったので、tax_idを取得後に別クエリでsubClassOfのparent_tax_idを取得してファイルを生成するようにした
+  # 多分 uniprotの方でtaxonomy_hieralcalでリーズニングデータがロードされているのでこれはいらない。
+  # リーズニングデータに subClassOf*を叩くので重くなっていた。不要だと確認できれば削除する
+  def create_up_tax_reasoner()
+    output_file = "#{@output_dir}/up_tax_subclass_reasoner.ttl"
+    File.delete(output_file) if File.exist?(output_file)
+    File.open(output_file, 'w') do |file|
+      file.puts triple("@prefix", "rdfs:", "<http://www.w3.org/2000/01/rdf-schema#>")
+      file.puts ""
+    end
+    
+    sparql = File.read("#{@query_dir}/up_tax_list.rq") # まずtax_idのリストを取得
+    result = @text_search_base.isql_query(sparql)
+    result.lines do |line|
+      tax = line.chomp
+      template = File.read("#{@query_dir}/up_tax_subclass_reasoner.erb") # それらの親をtax_idを取得
+      sparql = ERB.new(template).result(binding)
+      parent_result = @text_search_base.isql_query(sparql)
+      File.open(output_file, 'a') do |file|
+        parent_result.lines do |parent_line|
+          file.puts triple("<#{tax}>", "rdfs:subClassOf", "<#{parent_line.chomp}>");
+        end
+      end
+    end
   end
 
   def load_up_reasoner()
-    load_ttl("#{@output_dir}/up_concept_subclass_reasoner.ttl", "http://togogenome.org/graph/text_search/up_concept_subclass_reasoner")
-    load_ttl("#{@output_dir}/up_tax_subclass_reasoner.ttl", "http://togogenome.org/graph/text_search/up_tax_subclass_reasoner")
-    load_ttl("#{@output_dir}/up_anno_subclass_reasoner.ttl", "http://togogenome.org/graph/text_search/up_anno_subclass_reasoner")
+    @text_search_base.load_ttl("#{@output_dir}/up_concept_subclass_reasoner.ttl", "http://togogenome.org/graph/text_search/up_concept_subclass_reasoner")
+    @text_search_base.load_ttl("#{@output_dir}/up_tax_subclass_reasoner.ttl", "http://togogenome.org/graph/text_search/up_tax_subclass_reasoner")
+    @text_search_base.load_ttl("#{@output_dir}/up_anno_subclass_reasoner.ttl", "http://togogenome.org/graph/text_search/up_anno_subclass_reasoner")
   end
 
   def create_upgo_reasoner()
@@ -147,7 +187,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
     end
 
     sparql = File.read("#{@query_dir}/up_ontologies_upgo_reasoner.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     File.open("#{@upgo_reasoner_ttl_path}", 'a') do |file|
       result.lines do |line|
         up_go = line.split('^@')
@@ -161,7 +201,7 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
     end
 
     sparql = File.read("#{@query_dir}/up_ontologies_go_subclass_reasoner.rq")
-    result = isql_query(sparql)
+    result = @text_search_base.isql_query(sparql)
     File.open("#{@upgo_reasoner_ttl_path}", 'a') do |file|
       result.lines do |line|
         go_root = line.split('^@')
@@ -175,27 +215,9 @@ ENDPOINT = "http://ep.dbcls.jp/sparql-import"
   end
 
   def load_upgo_reasoner()
-    load_ttl("#{@upgo_reasoner_ttl_path}", "http://togogenome.org/graph/text_search/up_ontologies_upgo_reasoner")
+    @text_search_base.load_ttl("#{@upgo_reasoner_ttl_path}", "http://togogenome.org/graph/text_search/up_ontologies_upgo_reasoner")
   end
 
-  def isql_query(sparql, output_path = nil)
-    sparql_path = Tempfile.open('sparql_file') {|fp|
-      fp.puts "SPARQL"
-      fp.puts sparql
-      fp.puts ";"
-      fp.path
-    }
-
-    if output_path
-      system(%Q[#{@isql_cmd} < #{sparql_path} > #{output_path}])
-    else
-      output_tmp = Tempfile.open('output')
-      system(%Q[#{@isql_cmd} < #{sparql_path} > #{output_tmp.path}])
-      result = output_tmp.read
-      output_tmp.close!
-      result
-    end
-  end
 end
 
 prepare = TextSearchGenePrepare.new()
@@ -207,7 +229,8 @@ prepare.create_protein_gene_json() #11min
 prepare.create_protein_gene_ttl() #6 min
 prepare.protein_gene_ttl() #2min
 prepare.create_up_reasoner() #1min
+prepare.create_up_tax_reasoner()
 prepare.load_up_reasoner() #1min
 prepare.create_upgo_reasoner() #10min
-#prepare.load_upgo_reasoner() #4min
+prepare.load_upgo_reasoner() #4min
 prepare.create_tax_id_json() #1min

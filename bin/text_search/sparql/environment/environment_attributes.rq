@@ -1,4 +1,3 @@
-SPARQL
 PREFIX meo: <http://purl.jp/bio/11/meo/>
 SELECT
   ?meo_id ("^@" AS ?delimit1)
@@ -13,4 +12,3 @@ WHERE
   OPTIONAL { ?meo_id meo:MEO_0000443 ?meo_definition . }
   OPTIONAL { ?meo_id meo:MEO_0000776 ?exact_synonym . }
 } GROUP BY ?meo_id
-;

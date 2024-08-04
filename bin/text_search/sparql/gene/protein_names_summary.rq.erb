@@ -1,4 +1,3 @@
-SPARQL
 DEFINE sql:select-option "order"
 PREFIX up: <http://purl.uniprot.org/core/>
 
@@ -22,15 +21,12 @@ WHERE {
     OPTIONAL {
       ?protein up:recommendedName ?recommended_name_node .
       ?recommended_name_node up:fullName ?recommended_name .
+      ### EC=
+      OPTIONAL { ?recommended_name_node up:ecName ?ec_name . }
     }
-
-    ### EC=
-    OPTIONAL { ?recommended_name_node up:ecName ?ec_name . }
-
     OPTIONAL {
       ?protein up:alternativeName ?alternative_names_node .
       ?alternative_names_node up:fullName ?alternative_names .
     }
   }
 } GROUP BY ?togo_gene
-;

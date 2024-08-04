@@ -1,0 +1,12 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT DISTINCT ?parent_taxonomy
+FROM <http://togogenome.org/graph/uniprot>
+WHERE
+{
+  <<%= tax %>> rdf:type up:Taxon ;
+   rdfs:subClassOf ?parent_taxonomy.
+  ?parent_taxonomy up:rank ?rank .
+}
+

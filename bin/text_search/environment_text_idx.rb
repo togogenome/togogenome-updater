@@ -2,17 +2,16 @@
 
 require 'json'
 require 'fileutils'
+require "#{File.expand_path("..", __FILE__)}/./base.rb"
 
-ISQL = '/data/store/virtuoso7.1/bin/isql 20711 dba dba'
-ISQL_OPT = 'VERBOSE=OFF BANNER=OFF PROMPT=OFF ECHO=OFF BLOBS=ON ERRORS=stderr'
-TOGO_DIR = '/data/store/rdf/togogenome'
-BASE_DIR = "#{TOGO_DIR}/bin/text_search"
+BASE_DIR = @base_dir = File.expand_path("..", __FILE__)
 QUERY_DIR = "#{BASE_DIR}/sparql/environment"
-PREPARE_DIR = "#{TOGO_DIR}/text_search/current/prepare/environment"
-OUTPUT_DIR = "#{TOGO_DIR}/text_search/current/environment"
+PREPARE_DIR = "/data/text_search/current/prepare/environment"
+OUTPUT_DIR = "/data/text_search/current/environment"
 OUTPUT_SOLR_DIR = "#{OUTPUT_DIR}/solr"
 
 @metadata = JSON.parse(File.read("#{BASE_DIR}/environment.json"))
+@text_search_base = TextSearchBase.new
 
 # query to get text data of stanzas
 def query(query_name)
@@ -20,7 +19,7 @@ def query(query_name)
   FileUtils.mkdir_p("#{PREPARE_DIR}/text")
   query_file = "#{QUERY_DIR}/#{query_name}.rq"
   output_file = "#{PREPARE_DIR}/text/#{query_name}.txt"
-  system(%Q[#{ISQL} #{ISQL_OPT} < #{query_file} > #{output_file}])
+  @text_search_base.isql_query(File.read(query_file), output_file)
   STDERR.puts "End: query [#{query_name}]"
 end
 
@@ -52,60 +51,13 @@ def environment_obj_mapping(line, query_name, columns_info)
     if column["is_identify"]
       meo_no = columns[column["column_number"]].strip.gsub('http://purl.jp/bio/11/meo/','')
       values["@id"] = "http://togogenome.org/environment/#{meo_no}"
-      values["meo_id"] = to_utf(meo_no)
+      values["meo_id"] = @text_search_base.to_utf(meo_no)
     else # expect id columns are
-      value = columns[column["column_number"]].split("|||").map do |entry| to_utf(entry.strip) end
+      value = columns[column["column_number"]].split("|||").map do |entry| @text_search_base.to_utf(entry.strip) end
       values[column["column_name"]] = value
     end
   end
   values
-end
-
-### TODO below methods move to parent class?
-
-def to_utf(str)
-  str.force_encoding('UTF-8')
-end
-
-# get columns setting of query
-def get_query_columns(stanza_name,query_name)
-  query_column_info = {}
-  @metadata["stanzas"].map do |stanza|
-    if stanza_name == stanza["stanza_name"]
-      stanza["queries"].each do |query|
-        if query_name == query["query_name"]
-          query_column_info = query["columns"]
-        end
-      end
-    end
-  end
-  query_column_info
-end
-
-# returns column names of stanza
-def get_stanza_column_names (stanza_name)
-  columns = []
-  @metadata["stanzas"].map do |stanza|
-    if stanza_name == stanza["stanza_name"]
-      stanza["queries"].each do |query|
-        query["columns"].each do |column|
-          columns.push(column["column_name"])
-        end
-      end
-    end
-  end
-  columns.uniq
-end
-
-# returns context hash for jsonld
-def get_context_hash(stanza_name, column_names)
-  base_url = "http://togogenome.org/#{stanza_name}"
-
-  hash = {}
-  column_names.each do |column_name|
-    hash[column_name] = "#{base_url}/#{column_name}"
-  end
-  hash
 end
 
 #create hash data from text data of query result
@@ -117,7 +69,7 @@ def text2hash (stanza_name,query_names)
     File.open("#{input_file}") do |f|
       while line  = f.gets
         # convert a line to hash object
-        columns_info = get_query_columns(stanza_name, query_name)
+        columns_info = @text_search_base.get_query_columns(stanza_name, query_name, @metadata)
         meo_text_data = environment_obj_mapping(line, query_name, columns_info)
 
         meo_id = meo_text_data["meo_id"]
@@ -140,7 +92,7 @@ end
 
 def output_json (stanza_name, result_hash)
   #get stanza columns name for jsonld @context data
-  columns = get_stanza_column_names(stanza_name)
+  columns = @text_search_base.get_stanza_column_names(stanza_name, @metadata)
 
   #output json file
   FileUtils.mkdir_p("#{OUTPUT_DIR}")
@@ -148,31 +100,8 @@ def output_json (stanza_name, result_hash)
   output_file  = "#{OUTPUT_DIR}/#{stanza_name}.jsonld"
   output_solr_file  = "#{OUTPUT_SOLR_DIR}/#{stanza_name}.json"
 
-  solr_index_file = File.open("#{output_solr_file}", 'w')
-  File.open("#{output_file}", 'w') do |file|
-    file.puts '{'
-    file.puts '"@context" :'
-    file.puts JSON.pretty_generate(get_context_hash(stanza_name, columns))
-    file.puts ','
-    file.puts '"@graph" :'
-    file.puts '['
-    solr_index_file.puts '['
-    comma = ','
-    cnt = 0
-    result_hash.each do |key, value|
-      if cnt == result_hash.size - 1
-        comma = ''
-      end
+  @text_search_base.output_file(output_solr_file, output_file, stanza_name, columns, result_hash)
 
-      file.puts JSON.pretty_generate(value) + comma
-      solr_index_file.puts JSON.pretty_generate(value) + comma
-      cnt += 1
-    end
-    file.puts ']'
-    solr_index_file.puts ']'
-    file.puts '}'
-  end
-  solr_index_file.close()
 end
 
 @metadata["stanzas"].map do |stanza|

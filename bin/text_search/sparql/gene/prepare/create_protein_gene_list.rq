@@ -5,7 +5,6 @@ SELECT  ?protein_no ("^@" AS ?delimit1)
 WHERE
 {
   GRAPH <http://togogenome.org/graph/text_search/protein_list> {
-    #VALUES ?protein { <http://purl.uniprot.org/uniprot/P16033> }
     ?protein rdf:type up:Protein .
   }
    GRAPH <http://togogenome.org/graph/tgup> {

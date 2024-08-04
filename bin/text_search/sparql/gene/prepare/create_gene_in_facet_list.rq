@@ -19,6 +19,5 @@ WHERE {
   }
   GRAPH <http://togogenome.org/graph/uniprot> {
     ?uniprot a up:Protein .
-    #  up:recommendedName/up:fullName ?recommended_name .
   }
 }

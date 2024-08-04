@@ -1,6 +1,0 @@
-SPARQL
-SELECT DISTINCT ?mpo_id
-FROM <http://togogenome.org/graph/mpo>
-{
-  ?mpo_id a owl:Class .
-};

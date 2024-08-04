@@ -41,7 +41,7 @@ services:
       - ${PWD}/../virtuoso/database:/opt/virtuoso-opensource/database
     ports:
       - "51111:1111"
-      - "58890:8890"
+      - "58990:8890"
     networks:
       - togogenome_updater
 networks:

@@ -13,7 +13,7 @@ SOLR_SERVER = 'http://localhost:15963/solr'
 SOLR_PARAM = '&stream.contentType=application/json&commit=true'
 
 def load_solr (category)
-  if category == "gene" || category == "phenotype"
+  if category == "gene"
     metadata = JSON.parse(File.read("#{BASE_DIR}/#{category}.json"))
     metadata["stanzas"].each do |stanza|
       stanza_name = stanza["stanza_name"]

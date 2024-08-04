@@ -1,0 +1,22 @@
+DEFINE sql:select-option "order"
+PREFIX up: <http://purl.uniprot.org/core/>
+
+SELECT DISTINCT ?up_tax
+WHERE
+{
+  GRAPH <http://togogenome.org/graph/text_search/protein_list> {
+    ?protein rdf:type up:Protein .
+  }
+  GRAPH <http://togogenome.org/graph/tgup> {
+    ?idx_up rdfs:seeAlso ?protein  .
+    ?idx_up rdf:type <http://identifiers.org/uniprot> .
+    ?idx_up rdfs:seeAlso ?idx_tax  .
+  }
+  GRAPH  <http://togogenome.org/graph/taxonomy> {
+    ?idx_tax rdfs:seeAlso ?up_tax .
+  }
+  GRAPH  <http://togogenome.org/graph/uniprot> {
+    ?up_tax rdf:type up:Taxon .
+  }
+}
+
