@@ -143,12 +143,23 @@ def sh_create(graph, name)
   return path
 end
 
-def load_rdf(path, graph, name)
+def load_rdf_mt(path, graph, name)
   isql = isql_create(graph, name)
   File.open(isql, "w") do |file|
     file.puts "#!/bin/sh"
     isql_write(file, "log_enable(2, 1);")
     isql_write(file, "DB.DBA.RDF_LOAD_RDFXML_MT(file_to_string_output('#{path}'), '', '#{GRAPH_NS}/graph/#{graph}');")
+    isql_write(file, "checkpoint;")
+  end
+  sh "#{DOCKER_VIRTUOSO} sh #{isql}"
+end
+
+def load_rdf(path, graph, name)
+  isql = isql_create(graph, name)
+  File.open(isql, "w") do |file|
+    file.puts "#!/bin/sh"
+    #isql_write(file, "log_enable(2, 1);")
+    isql_write(file, "DB.DBA.RDF_LOAD_RDFXML(file_to_string_output('#{path}'), '', '#{GRAPH_NS}/graph/#{graph}');")
     isql_write(file, "checkpoint;")
   end
   sh "#{DOCKER_VIRTUOSO} sh #{isql}"
@@ -378,7 +389,7 @@ namespace :obo_go do
   desc "Load Gene Ontology to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/ontology/go/current/go.owl", 'go', name)
+    load_dir("#{RDF_DIR}/ontology/go/current", '*.owl', 'go', name)å
     update_graph('go', name)
   end
 end
@@ -399,7 +410,7 @@ namespace :obo_so do
   desc "Load Sequence Ontology to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/ontology/so/current/so.owl", 'so', name)
+    load_rdf_mt("#{RDF_DIR}/ontology/so/current/so.owl", 'so', name)
     update_graph('so', name)
   end
 end
@@ -412,7 +423,7 @@ namespace :meo do
  desc "Load MEO to TogoGenome"
  task :load do
    name = set_name
-   load_rdf("#{RDF_DIR}/ontology/MEO/current/meo.owl", 'meo', name)
+   load_rdf_mt("#{RDF_DIR}/ontology/MEO/current/meo.owl", 'meo', name)
    update_graph('meo', name)
  end
 end
@@ -464,7 +475,7 @@ namespace :pdo do
   desc "Load PDO to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/ontology/PDO/current/pdo.owl", 'pdo', name)
+    load_rdf_mt("#{RDF_DIR}/ontology/PDO/current/pdo.owl", 'pdo', name)
     update_graph('pdo', name)
   end
 
@@ -484,7 +495,7 @@ namespace :csso do
   desc "Load CSSO to TogoGenome (move to ontology/CSSO ?)"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/ontology/PDO/current/csso.owl", 'csso', name)
+    load_rdf_mt("#{RDF_DIR}/ontology/PDO/current/csso.owl", 'csso', name)
     update_graph('csso', name)
   end
 end
@@ -497,8 +508,8 @@ namespace :gazetteer do
   desc "Load GAZETTEER to TogoGenome"
   task :load do
     name = set_name
-    load_rdf("#{RDF_DIR}/ontology/GAZETTEER/current/gazetteer.owl", 'gazetteer', name)
-    load_ttl("#{RDF_DIR}/ontology/GAZETTEER/current/gazetteer_lonlat.ttl", 'gazetteer', name)
+    load_dir("#{RDF_DIR}/ontology/GAZETTEER/current", '*.owl', 'gazetteer', name)
+    load_dir("#{RDF_DIR}/ontology/GAZETTEER/current", '*.ttl', 'gazetteer', name)å
     update_graph('gazetteer', name)
   end
 end
@@ -585,7 +596,7 @@ namespace :genomes do
     link_current("#{RDF_DIR}/genomes", name)
 
     # download only refseq(GCF) data. skip genbank(GCA) data
-    sh "rsync -auvk --delete ftp.ncbi.nlm.nih.gov::genomes/all/GCF --include='*/' --include='*.txt' --exclude='*' #{RDF_DIR}/genomes/data/genomes/all >> #{RDF_DIR}/current/genome_rsync.log 2>&1"
+    sh "rsync -auvk --delete ftp.ncbi.nlm.nih.gov::genomes/all/GCF --include='*/' --include='*.txt' --exclude='*' #{RDF_DIR}/genomes/data/genomes/all >> #{RDF_DIR}/genomes/current/genome_rsync.log 2>&1"
     sh "rsync -auvk --delete ftp.ncbi.nlm.nih.gov::genomes/ASSEMBLY_REPORTS --include='*/' --include='*.txt' --exclude='*' #{RDF_DIR}/genomes/data/genomes >> #{RDF_DIR}/genomes/current/genome_rsync.log 2>&1"
   end
 
@@ -674,7 +685,7 @@ namespace :uniprot do
   task :fetch do
     name = set_name
     path = create_subdir("#{RDF_DIR}/uniprot", name)
-    sh "cd #{path}; echo 'mirror -I idmapping.dat.gz -X *' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping"
+    sh "cd #{path}; echo 'mirror -X * -I idmapping.dat.gz' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping"
     sh "cd #{path}; echo 'mirror -X uniparc_* -X uniprotkb_* -X uniref* rdf' | lftp ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release"
     link_current("#{RDF_DIR}/uniprot", name)
   end

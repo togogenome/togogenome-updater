@@ -2,7 +2,6 @@
 
 ### Fetch and create and load Assembly reports
 echo "Start: Update Assembly reports"
-rake genomes:fetch
 rake genomes:prepare
 rake genomes:load
 echo "End: Update Assembly reports"
