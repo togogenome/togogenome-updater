@@ -389,7 +389,7 @@ namespace :obo_go do
   desc "Load Gene Ontology to TogoGenome"
   task :load do
     name = set_name
-    load_dir("#{RDF_DIR}/ontology/go/current", '*.owl', 'go', name)å
+    load_dir("#{RDF_DIR}/ontology/go/current", '*.owl', 'go', name)
     update_graph('go', name)
   end
 end
@@ -509,7 +509,7 @@ namespace :gazetteer do
   task :load do
     name = set_name
     load_dir("#{RDF_DIR}/ontology/GAZETTEER/current", '*.owl', 'gazetteer', name)
-    load_dir("#{RDF_DIR}/ontology/GAZETTEER/current", '*.ttl', 'gazetteer', name)å
+    load_dir("#{RDF_DIR}/ontology/GAZETTEER/current", '*.ttl', 'gazetteer', name)
     update_graph('gazetteer', name)
   end
 end

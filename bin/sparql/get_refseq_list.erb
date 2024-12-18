@@ -1,3 +1,4 @@
+DEFINE sql:select-option "order"
 PREFIX asm: <http://ddbj.nig.ac.jp/ontologies/assembly/>
 PREFIX id_tax: <http://identifiers.org/taxonomy/>
 PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
@@ -19,8 +20,6 @@ FROM <http://togogenome.org/graph/taxonomy>
   asm:release_date ?release_date ; #use stats
   asm:sequence ?seq ;
   asm:relation_to_type_material ?relation_to_type_material .
- ?tax_uri a tax:Taxon ;
-    rdfs:subClassOf* id_tax:<%= tax_id %> .
  ?seq asm:assigned_molecule_location_type ?replicon_type ;
   asm:sequence_role "assembled-molecule" ;
   asm:refseq_accession ?seq_id .
@@ -29,6 +28,5 @@ FROM <http://togogenome.org/graph/taxonomy>
    AND !((?tax_id ="9606") AND !(?bioproject_accession = "PRJNA168"))
    AND regex(?seq_id, "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{2,4}\\d+))(\\.\\d+)?$")
    AND (?refseq_category IN ("representative genome", "reference genome") OR ?tax_id = ?additional_taxid)
-   <%= type_material %>
  )
 } ORDER BY ?tax_id ?bioproject_accession ?replicon_type ?seq_id

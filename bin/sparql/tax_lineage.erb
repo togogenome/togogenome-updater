@@ -1,0 +1,10 @@
+PREFIX id_tax: <http://identifiers.org/taxonomy/>
+PREFIX tax: <http://ddbj.nig.ac.jp/ontologies/taxonomy/>
+
+SELECT ?ancestor_tax
+FROM <http://togogenome.org/graph/taxonomy>
+{
+   VALUES ?tax_uri { id_tax:<%= tax_id %> }
+   ?tax_uri a tax:Taxon .
+   ?tax_uri rdfs:subClassOf* ?ancestor_tax.
+}
