@@ -13,13 +13,25 @@ result_list = []
 template = File.read("#{base_dir}/sparql/get_refseq_list.erb")
 sparql = ERB.new(template).result(binding)
 result = ""
-
 endpoint.query(sparql, :format => 'json') do |json|
   result += json
 end
 
 results = JSON.parse(result)["results"]["bindings"]
 result_list.concat(results)
+
+# 例外的に取得する accessionの情報を取得
+additional_refseq_list = JSON.parse(File.read("./#{base_dir}/additional_refseq_list.json"))
+additional_refseq_list.each do |additional_refseq|
+  template = File.read("#{base_dir}/sparql/get_refseq_add_list.erb")
+  sparql = ERB.new(template).result(binding)
+  result = ""
+  endpoint.query(sparql, :format => 'json') do |json|
+    result += json
+  end
+  results = JSON.parse(result)["results"]["bindings"]
+  result_list.concat(results)
+end
 
 list = result_list.map do |entry|
   hash = {
@@ -59,12 +71,14 @@ tax_list.each do |tax_id|
   tax_kingom
 end
 
+
 # 真核でない生物種で、relation_to_type_material の情報がないものは対象外とする
+# 但し、additional_refseq_list.json で追加したものは削除しない
 list.each do |genome|
-  if tax_kingom[genome[:tax_id]] != "2759" && genome[:relation_to_type_material] == "na"
+  if tax_kingom[genome[:tax_id]] != "2759" && genome[:relation_to_type_material] == "na" && (!additional_refseq_list.include?(genome[:assembly_accession]))
     genome[:delete_flag] = true
   end
 end
 list.delete_if {|row| row[:delete_flag] == true }
 
-puts JSON.pretty_generate(list)
+puts JSON.pretty_generate(list.uniq)
